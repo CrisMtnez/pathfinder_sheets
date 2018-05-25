@@ -24,8 +24,10 @@ public class Menu extends JFrame {
     JMenuItem[] sheets;
 
     /*TO-DO:
-    - menuitems para opensheet con las recientes. Si no hay: "No saved sheets"
-    - superclass character with all the stats, skills, etc and core classes and races inherit from it
+    - leer y guardar fichas
+    - layout con pestañas para equipment and magic items + pestaña para magia
+    - feats, armor and weapons
+    - boton dice roller
      */
     public Menu() {
 
