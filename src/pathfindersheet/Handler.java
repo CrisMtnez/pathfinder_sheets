@@ -44,7 +44,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                 CharacterSheet cs = new CharacterSheet(e.getSource() == m.nuevaFicha, e.getSource() == m.nuevaFicha ? ""
                         : m.ss.hojaPersonaje(((JMenuItem) (e.getSource())).getText().trim()));
-                cs.setSize(855, 680);
+                cs.setSize(935, 680);
                 cs.setVisible(true);
                 cs.setResizable(true);
                 cs.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
@@ -72,17 +72,59 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
         if (cs != null) {
 
-            if (ke.getComponent().getName().equals("0") || ke.getComponent().getName().equals("1")
-                    || ke.getComponent().getName().equals("2") || ke.getComponent().getName().equals("3")
-                    || ke.getComponent().getName().equals("4") || ke.getComponent().getName().equals("5")) {
+            switch (ke.getComponent().getName()) {
 
-                fila = Integer.parseInt(ke.getComponent().getName().charAt(0) + "");
-                modifiers(ke.getComponent(), fila, "stat");
+                case "0":
+                case "1":
+                case "2":
+                case "3":
+                case "4":
+                case "5":
+                    fila = Integer.parseInt(ke.getComponent().getName().charAt(0) + "");
+                    modifiers(ke.getComponent(), fila, "stat");
+                    modifiers(ke.getComponent(), 0, "attack");
+                    modifiers(ke.getComponent(), 0, "defense");
+                    modifiers(ke.getComponent(), 0, "saves");
+                    modifiers(ke.getComponent(), 0, "skills");
+                    break;
 
-            } else if (ke.getComponent().getName().charAt(0) == '6' || ke.getComponent().getName().charAt(0) == '2') {
+                case "20":
+                case "21":
+                case "22":
+                case "23":
+                case "60":
+                case "61":
+                case "62":
+                case "63":
+                    fila = Integer.parseInt(ke.getComponent().getName().charAt(1) + "");
+                    modifiers(ke.getComponent(), fila, "attack");
+                    break;
 
-                fila = Integer.parseInt(ke.getComponent().getName().charAt(1) + "");
-                modifiers(ke.getComponent(), fila, "attack");
+                case "00":
+                case "01":
+                case "02":
+                    if (ke.getComponent()!=cs.armor[1] ) {
+                        fila = Integer.parseInt(ke.getComponent().getName().charAt(1) + "");
+                    } else{
+                        fila = 2;
+                    }
+                    modifiers(ke.getComponent(), fila, "defense");
+                    break;
+
+                case "10":
+                case "11":
+                case "12":
+                    fila = Integer.parseInt(ke.getComponent().getName().charAt(1) + "");
+                    modifiers(ke.getComponent(), fila, "saves");
+                    break;
+                    
+                case "damage":
+                    break;
+
+                default:  //para los skills, 3-
+                    fila = Integer.parseInt(ke.getComponent().getName().charAt(1) + "");
+                    modifiers(ke.getComponent(), fila, "skills");
+                    break;
             }
         }
     }
@@ -91,40 +133,40 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
     public void mouseClicked(MouseEvent m) {
 
     }
-    
+
     public void modifiers(Component ke, int fila, String tipo) {
 
-        int valor;
+        int value;
 
         switch (tipo) {
 
             case "stat":
 
-                valor = 0;
-                
+                value = 0;
+
                 try {
-                    valor += Integer.parseInt(cs.baseStats[fila].getText());
+                    value += Integer.parseInt(cs.baseStats[fila].getText());
                 } catch (NumberFormatException n) {
-                    valor+=0;
+                    value += 0;
                 }
                 try {
-                    valor += Integer.parseInt(cs.enhStats[fila].getText());
+                    value += Integer.parseInt(cs.enhStats[fila].getText());
                 } catch (NumberFormatException n) {
-                    valor+=0;
+                    value += 0;
                 }
                 try {
-                    valor += Integer.parseInt(cs.miscStats[fila].getText());
+                    value += Integer.parseInt(cs.miscStats[fila].getText());
                 } catch (NumberFormatException n) {
-                    valor+=0;
+                    value += 0;
                 }
                 try {
-                    valor += Integer.parseInt(cs.tempStats[fila].getText());
+                    value += Integer.parseInt(cs.tempStats[fila].getText());
                 } catch (NumberFormatException n) {
-                    valor+=0;
+                    value += 0;
                 }
 
-                cs.totalStats[fila].setText(valor + "");
-                mod = (int) (((valor - (valor % 2)) - 10) / 2);
+                cs.totalStats[fila].setText(value + "");
+                mod = (int) (((value - (value % 2)) - 10) / 2);
                 cs.modStats[fila].setText(mod + "");
 
                 for (int i = 0; i < cs.mods.length; i++) {
@@ -154,73 +196,151 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                 for (int i = 0; i < cs.totalAttack.length; i++) {
 
-                    valor = 0;
+                    value = 0;
 
                     try {
-                        valor += Integer.parseInt(cs.BAB[i].getText());
+                        value += Integer.parseInt(cs.BAB[i].getText());
                     } catch (NumberFormatException n) {
-                        valor += 0;
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.mods[i+5].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.sizeAttack[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.miscAttack[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.tempAttack[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
                     }
 
-                    try {
-                        modF = Integer.parseInt(cs.modStats[0].getText());
-                    } catch (NumberFormatException n) {
-                        modF = 0;
-                    }
-                    try {
-                        modD = Integer.parseInt(cs.modStats[1].getText());
-                    } catch (NumberFormatException n) {
-                        modD = 0;
-                    }
-
-                    switch (i) {
-                        case 0:
-                        case 2:
-                            valor += modF;
-                            break;
-                        case 1:
-                            valor += modD;
-                            break;
-                        case 3:
-                            valor += modF + modD;
-                            break;
-                    }
-
-                    try {
-                        valor += Integer.parseInt(cs.sizeAttack[i].getText());
-                    } catch (NumberFormatException n) {
-                        valor += 0;
-                    }
-                    try {
-                        valor += Integer.parseInt(cs.miscAttack[i].getText());
-                    } catch (NumberFormatException n) {
-                        valor += 0;
-                    }
-                    try {
-                        valor += Integer.parseInt(cs.tempAttack[i].getText());
-                    } catch (NumberFormatException n) {
-                        valor += 0;
-                    }
-
-                    cs.totalAttack[i].setText(valor + "");
+                    cs.totalAttack[i].setText(i == 3 ? value + 10 + "" : value + "");
                 }
-
-                break; 
-
-            case "fila":
                 break;
 
-            case "skills":
+            case "defense":
+                for (int i = 0; i < cs.totalDefense.length; i++) {
+
+                    value = 0;
+
+                    if (i == 0) {
+                        try {
+                            value += Integer.parseInt(cs.armor[i].getText());
+                        } catch (NumberFormatException n) {
+                            value += 0;
+                        }
+                    }
+
+                    if (i == 2) {
+                        try {
+                            value += Integer.parseInt(cs.armor[1].getText());
+                        } catch (NumberFormatException n) {
+                            value += 0;
+                        }
+                    }
+
+                    if (i != 2) {
+                        try {
+                            value += Integer.parseInt(cs.mods[i].getText());
+                        } catch (NumberFormatException n) {
+                            value += 0;
+                        }
+                    }
+
+                    try {
+                        value += Integer.parseInt(cs.sizeDefense[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.miscDefense[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.tempDefense[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+
+                    cs.totalDefense[i].setText(value + 10 + "");
+                }
+                break;
+
+            case "saves":                
+                for (int i = 0; i < cs.totalSaves.length; i++) {
+
+                    value = 0;
+
+                    try {
+                        value += Integer.parseInt(cs.baseSaves[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.mods[i+2].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.enhSaves[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.miscSaves[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.tempSaves[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+
+                    cs.totalSaves[i].setText(value + "");
+                }
+                break;
+
+            case "skills":                
+                for (int i = 0; i < cs.totalSkills.length; i++) {
+
+                    value = 0;
+
+                    try {
+                        value += Integer.parseInt(cs.mods[i+9].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.rankSkills[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.trainedSkills[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+                    try {
+                        value += Integer.parseInt(cs.miscSkills[i].getText());
+                    } catch (NumberFormatException n) {
+                        value += 0;
+                    }
+
+                    cs.totalSkills[i].setText(value + "");
+                }
                 break;
         }
     }
 }
-
-//    Para confirmar la posicion de x e y además del nombre:
-//    if (ke.getComponent().getY() == cs.totalAttack[0].getY()
-//            || ke.getComponent().getY() == cs.totalAttack[1].getY()
-//            || ke.getComponent().getY() == cs.totalAttack[2].getY()
-//            || ke.getComponent().getY() == cs.totalAttack[3].getY() && (ke.getComponent().getX() == cs.BAB[0].getX()
-//            || ke.getComponent().getX() == cs.sizeAttack[0].getX()
-//            || ke.getComponent().getX() == cs.miscAttack[0].getX()
-//            || ke.getComponent().getX() == cs.tempAttack[0].getX())) {

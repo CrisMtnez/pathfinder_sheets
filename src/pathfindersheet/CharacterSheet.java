@@ -4,13 +4,15 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.util.ArrayList;
 import javax.swing.*;
+import javax.swing.border.TitledBorder;
 
 public class CharacterSheet extends JFrame {
     
     JScrollPane scroll;
     JPanel totalPanel;
-    SheetText bc;
-    JPanel panelStats, panelHP, panelAtAndDef, panelSkills;
+    SheetText st;
+    JComboBox conditions;
+    JPanel panelStats, panelHP, panelAtAndDef, panelArmor, panelWeapons, borderPanelFeats,titlePanelFeats,panelFeats, panelSkills;
     JLabel[] colStats = new JLabel[7], tStats = new JLabel[6],
              colDefense = new JLabel [7], tDefense = new JLabel[3], 
              colSaves = new JLabel[7], tSaves = new JLabel[3], 
@@ -26,24 +28,37 @@ public class CharacterSheet extends JFrame {
             totalSkills = new JTextField[35], rankSkills = new JTextField[35], trainedSkills = new JTextField[35],
             miscSkills = new JTextField[35], mods = new JTextField[44];  //OJO, ir aumentando el tamaño segun los use!!!!!!!!
     JTextField languages, currentHP, damage, armorPenalty, maxDex, conMod;
-    JLabel totalHP, labcurrentHP, labdamage;
+    JLabel totalHP, labcurrentHP, labdamage, labConditions;
     ArrayList<JLabel[]> weapons;
     ArrayList<JLabel> feats;
     ArrayList<JLabel> features;
     ArrayList<JLabel> equipment;
     int x, y, w, h;
     int modsCount=0;
+    
+       
+    /*TO-DO:
+    - leer y guardar fichas
+    - jtextfield dentro del label prof de skills
+    - layout con pestañas para equipment and magic items + pestaña para magia
+    - feats, armor and weapons
+    - boton dice roller
+    - texfield damage responsive: aumenta cuando los daños no quepan, disminuye al reducirse
+    - current HP se calcula al meter damage (en positivo)
+    - MenuBar con opciones (Nueva ficha, cargar ficha, salir...)
+    - checkboxes a las skills
+     */
 
     public CharacterSheet(boolean nuevoPersonaje, String personaje) {
 
         super(personaje);           
         setLayout(null);
 
-        bc = new SheetText();
+        st = new SheetText();
         
         totalPanel = new JPanel(); 
         totalPanel.setLayout(null);
-        totalPanel.setPreferredSize(new Dimension(855,830)); //THIS!!
+        totalPanel.setPreferredSize(new Dimension(915,790)); //THIS!!
 
         panelStats = new JPanel();
         panelStats.setLayout(null);        
@@ -53,9 +68,19 @@ public class CharacterSheet extends JFrame {
         
         panelHP = new JPanel();
         panelHP.setLayout(null);
-        panelHP.setBounds(panelStats.getX()+panelStats.getWidth()+65,panelStats.getY()+6,75,105);                
+        panelHP.setBounds(panelStats.getX()+panelStats.getWidth()+20,panelStats.getY()+6,75,105);                
         hp();        
         totalPanel.add(panelHP);
+        
+        labConditions = new JLabel("CONDITIONS:");
+        labConditions.setBounds(panelHP.getX()+panelHP.getWidth()+20, panelHP.getY(), 120, 15);
+        totalPanel.add(labConditions);
+        
+        conditions = new JComboBox(st.conditions);
+        conditions.setBounds(panelHP.getX()+panelHP.getWidth()+20, panelHP.getY()+20, 120, 20);
+        conditions.setSelectedIndex(-1); 
+        conditions.addActionListener(new Handler(this));
+        totalPanel.add(conditions);
                 
         panelAtAndDef = new JPanel();
         panelAtAndDef.setLayout(null);        
@@ -68,9 +93,43 @@ public class CharacterSheet extends JFrame {
         
         panelSkills = new JPanel();
         panelSkills.setLayout(null);        
-        panelSkills.setBounds(panelHP.getX()+panelHP.getWidth()+45,panelStats.getY(),340,760);        
+        panelSkills.setBounds(panelHP.getX()+panelHP.getWidth()+165,panelStats.getY(),330,760);
         skills();        
         totalPanel.add(panelSkills);
+        
+        panelArmor = new JPanel();
+        panelArmor.setLayout(null);
+        panelArmor.setBounds(panelAtAndDef.getX()+panelAtAndDef.getWidth()+25,panelAtAndDef.getY()-10,210,150);
+        panelArmor.setBorder(BorderFactory.createTitledBorder(null,"ARMOR",TitledBorder.CENTER,TitledBorder.TOP,Menu.PFONT));
+                
+        totalPanel.add(panelArmor);
+        
+        panelWeapons = new JPanel();
+        panelWeapons.setLayout(null);
+        panelWeapons.setBounds(panelArmor.getX(),panelArmor.getY()+panelArmor.getHeight()+20,210,166);
+        panelWeapons.setBorder(BorderFactory.createTitledBorder(null,"WEAPONS",TitledBorder.CENTER,TitledBorder.TOP,Menu.PFONT));
+                
+        totalPanel.add(panelWeapons);
+        
+        borderPanelFeats = new JPanel();
+        borderPanelFeats.setLayout(null);
+        borderPanelFeats.setBounds(panelAtAndDef.getX(),panelAtAndDef.getY()+panelAtAndDef.getHeight()+20,523,237);
+        borderPanelFeats.setBackground(Color.DARK_GRAY);
+                
+        titlePanelFeats = new JPanel();
+        titlePanelFeats.setLayout(null);
+        titlePanelFeats.setBounds(5,0,borderPanelFeats.getWidth()-10,borderPanelFeats.getHeight()-5);
+        titlePanelFeats.setOpaque(false);
+        titlePanelFeats.setBorder(BorderFactory.createTitledBorder(null,"FEATS & FEATURES",TitledBorder.LEFT,
+                                  TitledBorder.ABOVE_TOP, Menu.PFONT,Menu.KHAKI));    
+        
+        panelFeats = new JPanel();
+        panelFeats.setLayout(null);
+        panelFeats.setBounds(5,25,titlePanelFeats.getWidth()-10,titlePanelFeats.getHeight()-30);
+        
+        titlePanelFeats.add(panelFeats);                    
+        borderPanelFeats.add(titlePanelFeats);        
+        totalPanel.add(borderPanelFeats);
         
         add(totalPanel);
 
@@ -93,7 +152,7 @@ public class CharacterSheet extends JFrame {
         h = 15;
         
         for (int i = 0; i < colStats.length; i++, x += 35) {
-            colStats[i] = new JLabel("<html><h6>" + bc.colStats[i] + "</h6></html>");
+            colStats[i] = new JLabel("<html><h6>" + st.colStats[i] + "</h6></html>");
             colStats[i].setBounds(x, y, i == 0 ? w + 5 : w, h);            
             colStats[i].setHorizontalAlignment(JLabel.CENTER);
             panelStats.add(colStats[i]);
@@ -108,7 +167,7 @@ public class CharacterSheet extends JFrame {
         h = 20;
 
         for (int i = 0; i < tStats.length; i++, y += 21) {
-            tStats[i] = new JLabel(" " + bc.tStats[i]);
+            tStats[i] = new JLabel(" " + st.tStats[i]);
             tStats[i].setBounds(x, y, w, h);
             tStats[i].setForeground(Menu.KHAKI);
             tStats[i].setBackground(Menu.DARKER_GRAY);
@@ -213,8 +272,10 @@ public class CharacterSheet extends JFrame {
         panelHP.add(labdamage);
 
         damage = new JTextField();
-        damage.setBounds(10, labdamage.getY()+10, currentHP.getWidth(), 20);
+        damage.setBounds(10, labdamage.getY()+10, 50, 20);
         damage.setHorizontalAlignment(JTextField.CENTER);
+        damage.setName("damage"); 
+        damage.addKeyListener(new Handler(this)); //cuando texto.length sea mayor a x, aumentar, si no restaura
         panelHP.add(damage);
     }
     
@@ -226,7 +287,7 @@ public class CharacterSheet extends JFrame {
         h = colStats[0].getHeight();
         
         for (int i = 0; i < colDefense.length; i++, x += 35) {
-            colDefense[i] = new JLabel("<html><h6>" + bc.colDefense[i] + "</h6></html>");
+            colDefense[i] = new JLabel("<html><h6>" + st.colDefense[i] + "</h6></html>");
             colDefense[i].setBounds(x, y, i == 0 ? w + 5 : w, h);            
             colDefense[i].setHorizontalAlignment(JLabel.CENTER);
             panelAtAndDef.add(colDefense[i]);
@@ -241,7 +302,7 @@ public class CharacterSheet extends JFrame {
         h = tStats[0].getHeight();
 
         for (int i = 0; i < tDefense.length; i++, y += 21) {
-            tDefense[i] = new JLabel(bc.tDefense[i]);
+            tDefense[i] = new JLabel(st.tDefense[i]);
             tDefense[i].setBounds(x, y, w, h);
             tDefense[i].setForeground(Menu.KHAKI);
             tDefense[i].setBackground(Menu.DARKER_GRAY);
@@ -270,6 +331,7 @@ public class CharacterSheet extends JFrame {
                 armor[j] = new JTextField(0);
                 armor[j].setBounds(x, y, w, h);
                 armor[j].setName("0"+i);                            //nombres de 2 cifras => 1ª=tabla, 2ª=fila
+                armor[j].addKeyListener(new Handler(this));
                 armor[j].setHorizontalAlignment(JTextField.CENTER);
                 panelAtAndDef.add(armor[j]);
                 j++;    //añadimos j porque hay que dejar un hueco entre armor[0] y armor [1]
@@ -296,6 +358,7 @@ public class CharacterSheet extends JFrame {
             sizeDefense[i] = new JTextField(0);
             sizeDefense[i].setBounds(x,y,w,h);
             sizeDefense[i].setName("0"+i); 
+            sizeDefense[i].addKeyListener(new Handler(this));
             sizeDefense[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(sizeDefense[i]);
         }
@@ -333,7 +396,7 @@ public class CharacterSheet extends JFrame {
         h = colStats[0].getHeight();
         
         for (int i = 0; i < colSaves.length; i++, x += 35) {
-            colSaves[i] = new JLabel("<html><h6>" + bc.colSaves[i] + "</h6></html>");
+            colSaves[i] = new JLabel("<html><h6>" + st.colSaves[i] + "</h6></html>");
             colSaves[i].setBounds(x, y, i == 0 ? w + 5 : w, h);            
             colSaves[i].setHorizontalAlignment(JLabel.CENTER);
             panelAtAndDef.add(colSaves[i]);
@@ -348,7 +411,7 @@ public class CharacterSheet extends JFrame {
         h = tStats[0].getHeight();
 
         for (int i = 0; i < tSaves.length; i++, y += 21) {
-            tSaves[i] = new JLabel(bc.tSaves[i]);
+            tSaves[i] = new JLabel(st.tSaves[i]);
             tSaves[i].setBounds(x, y, w, h);
             tSaves[i].setForeground(Menu.KHAKI);
             tSaves[i].setBackground(Menu.DARKER_GRAY);
@@ -373,9 +436,10 @@ public class CharacterSheet extends JFrame {
         
         for (int i = 0; i < baseSaves.length; i++, y += 21) {
             x = totalSaves[i].getX()+totalSaves[i].getWidth()+5;            
-            baseSaves[i] = new JTextField(0);
+            baseSaves[i] = new JTextField();
             baseSaves[i].setBounds(x, y, w, h);
             baseSaves[i].setName("1"+i);
+            baseSaves[i].addKeyListener(new Handler(this));
             baseSaves[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(baseSaves[i]);
         }
@@ -397,7 +461,7 @@ public class CharacterSheet extends JFrame {
 
         for (int i = 0; i < enhSaves.length; i++, y += 21) {
             x = mods[modsCount-1].getX()+mods[modsCount-1].getWidth()+5;
-            enhSaves[i] = new JTextField(0);
+            enhSaves[i] = new JTextField();
             enhSaves[i].setBounds(x, y, w, h);
             enhSaves[i].addKeyListener(new Handler(this));
             enhSaves[i].setName("1"+i);
@@ -438,7 +502,7 @@ public class CharacterSheet extends JFrame {
         h = colStats[0].getHeight();
         
         for (int i = 0; i < colAttack.length; i++, x += 35) {
-            colAttack[i] = new JLabel("<html><h6>" + bc.colAttack[i] + "</h6></html>");
+            colAttack[i] = new JLabel("<html><h6>" + st.colAttack[i] + "</h6></html>");
             colAttack[i].setBounds(x, y, i == 0 ? w + 5 : w, h);            
             colAttack[i].setHorizontalAlignment(JLabel.CENTER);
             panelAtAndDef.add(colAttack[i]);
@@ -453,7 +517,7 @@ public class CharacterSheet extends JFrame {
         h = tStats[0].getHeight();
 
         for (int i = 0; i < tAttack.length; i++, y += 21) {
-            tAttack[i] = new JLabel(bc.tAttack[i]);
+            tAttack[i] = new JLabel(st.tAttack[i]);
             tAttack[i].setBounds(x, y, w, h);
             tAttack[i].setForeground(Menu.KHAKI);
             tAttack[i].setBackground(Menu.DARKER_GRAY);
@@ -545,22 +609,22 @@ public class CharacterSheet extends JFrame {
         
         for (int i = -1; i < colSkills.length; i++, x += 35) {
             if (i!=-1){
-                colSkills[i] = new JLabel("<html><h6>" + bc.colSkills[i] + "</h6></html>");
+                colSkills[i] = new JLabel("<html><h6>" + st.colSkills[i] + "</h6></html>");
                 colSkills[i].setBounds(x, y, i == 0 ? w + 5 : w, h);            
                 colSkills[i].setHorizontalAlignment(JLabel.CENTER);
                 panelSkills.add(colSkills[i]);
             } else {            
-                x += 140;  
+                x += 100;  
             }
         }
         
-        x = colSkills[0].getX()-141;
+        x = colSkills[0].getX()-145;
         y = colSkills[0].getY()+15;
         w = 150;
         h = 20;
 
         for (int i = 0; i < tSkills.length; i++, y += 21) {
-            tSkills[i] = new JLabel(" " + bc.tSkills[i]);
+            tSkills[i] = new JLabel(" " + st.tSkills[i]);
             tSkills[i].setBounds(x, y, w, h);
             tSkills[i].setForeground(Menu.KHAKI);
             tSkills[i].setBackground(i%2==0?Color.DARK_GRAY:Menu.DARKER_GRAY);
@@ -587,7 +651,7 @@ public class CharacterSheet extends JFrame {
         for (int i = 0; i < 35; i++, y += 21) {
             x = totalSkills[i].getX()+totalSkills[i].getWidth()+5;
             mods[modsCount] = new JTextField();
-            mods[modsCount].setBounds(x,y,w,h);
+            mods[modsCount].setBounds(x,y,w,h);    // mods 9-43
             mods[modsCount].setEditable(false);
             switch(i){
                 case 3:
@@ -666,7 +730,11 @@ public class CharacterSheet extends JFrame {
         }
     }
     
-    private void armorAndWeapons(){
+    private void armor(){
+        
+    }
+    
+    private void weapons(){
         
     }
     

@@ -9,7 +9,7 @@ public class SheetText {
     String [] colDefense = new String [] {"DEFENSES", "TOTAL", "ARMOR", "DEX", "SIZE", "MISC", "TEMP"};
     String [] colSaves = new String [] {"SAVES", "TOTAL", "BASE", "STAT", "ENHAN", "MISC", "TEMP"};
     String [] colAttack = new String [] {"ATTACKS", "TOTAL", "BAB", "STAT", "SIZE", "MISC", "TEMP"};
-    String [] colSkills = new String [] {"TOTAL", "RANKS", "STAT", "TRAINED", "MISC"};    
+    String [] colSkills = new String [] {"TOTAL", "STAT", "RANK", "CLASS", "MISC"};    
     String [] tStats = new String [] {"STR","DEX","CON","INT","WIS","CHA"};
     String [] tSaves = new String [] {"FORT","REF","WILL"};
     String [] tAttack = new String [] {"MELEE","RANGED","CMB","CMD"};
@@ -20,7 +20,11 @@ public class SheetText {
                                       "Kn: Geography", "Kn: History", "Kn: Local", "Kn: Nature", "Kn: Nobility", 
                                       "Kn: Planes", "Kn: Religion", "Linguistics", "Perception", "Perform", "Prof: ",
                                       "Ride", "Sense Motive", "Sleight of Hand", "Spellcraft", "Stealth", "Survival",
-                                      "Swim", "Use Magic Device"};
+                                      "Swim", "Use Magic Device"};    
+    String [] conditions = new String [] {"Bleed", "Blinded","Broken","Confused","Cowering","Dazed","Dazzled","Dead","Deafened",
+        "Disabled","Dying","Energy Drained","Entangled","Exhausted","Fascinated","Fatigued","Flat-Footed","Frightened","Grappled",
+        "Helpless","Incorporeal","Invisible","Nauseated","Panicked","Paralyzed","Petrified","Pinned","Prone","Shaken","Sickened",
+        "Sinking","Stable","Staggered","Stunned","Unconscious"};
     
     int[] totalStats = new int [6];
     int[] modStats = new int[6];    

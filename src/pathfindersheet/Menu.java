@@ -22,13 +22,7 @@ public class Menu extends JFrame {
     SavedSheets ss;
     String[] personajes;
     JMenuItem[] sheets;
-
-    /*TO-DO:
-    - leer y guardar fichas
-    - layout con pestañas para equipment and magic items + pestaña para magia
-    - feats, armor and weapons
-    - boton dice roller
-     */
+    
     public Menu() {
 
         super("Pathfinder sheets");
