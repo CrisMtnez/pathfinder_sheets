@@ -25,6 +25,8 @@ public class SheetText {
         "Disabled","Dying","Energy Drained","Entangled","Exhausted","Fascinated","Fatigued","Flat-Footed","Frightened","Grappled",
         "Helpless","Incorporeal","Invisible","Nauseated","Panicked","Paralyzed","Petrified","Pinned","Prone","Shaken","Sickened",
         "Sinking","Stable","Staggered","Stunned","Unconscious"};
+    String [] colArmor = new String [] {"NAME", "AC", "MAX", "PEN", "FAIL"};
+    String [] colWeapon = new String [] {"WEAPON", "ATT", "DAM", "CRIT","RANG"};
     
     int[] totalStats = new int [6];
     int[] modStats = new int[6];    

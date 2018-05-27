@@ -103,7 +103,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 case "00":
                 case "01":
                 case "02":
-                    if (ke.getComponent()!=cs.armor[1] ) {
+                    if (ke.getComponent()!=cs.armorDefense[1] ) {
                         fila = Integer.parseInt(ke.getComponent().getName().charAt(1) + "");
                     } else{
                         fila = 2;
@@ -235,7 +235,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                     if (i == 0) {
                         try {
-                            value += Integer.parseInt(cs.armor[i].getText());
+                            value += Integer.parseInt(cs.armorDefense[i].getText());
                         } catch (NumberFormatException n) {
                             value += 0;
                         }
@@ -243,7 +243,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                     if (i == 2) {
                         try {
-                            value += Integer.parseInt(cs.armor[1].getText());
+                            value += Integer.parseInt(cs.armorDefense[1].getText());
                         } catch (NumberFormatException n) {
                             value += 0;
                         }
