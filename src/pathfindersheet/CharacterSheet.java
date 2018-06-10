@@ -2,6 +2,7 @@ package pathfindersheet;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.util.ArrayList;
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -15,13 +16,14 @@ public class CharacterSheet extends JFrame {
     JMenu file, options, help;
     JMenuItem newf, openf, recentf, savef, exit, resetAll, diceRoller, activateToolTips, about;
     JComboBox conditions, chooseArmor, chooseWeapon;
+    JCheckBox[] chkSkills = new JCheckBox[35];
     JPanel panelStats, panelHP, panelAtAndDef, panelArmor, panelWeapons, borderPanelFeats, titlePanelFeats, panelFeats, panelSkills;
     JLabel[] colStats = new JLabel[7], tStats = new JLabel[6],
             colDefense = new JLabel[7], tDefense = new JLabel[3],
             colSaves = new JLabel[7], tSaves = new JLabel[3],
             colAttack = new JLabel[7], tAttack = new JLabel[4],
-            colSkills = new JLabel[5], tSkills = new JLabel[35],
-            colArmor = new JLabel[5], colWeapons = new JLabel[5];
+            colSkills = new JLabel[5],
+            colArmor = new JLabel[5], colWeapons = new JLabel[4];
     JTextField[] totalStats = new JTextField[6], modStats = new JTextField[6], baseStats = new JTextField[6],
             enhStats = new JTextField[6], miscStats = new JTextField[6], tempStats = new JTextField[6],
             sizeDefense = new JTextField[3], totalDefense = new JTextField[3], armorDefense = new JTextField[2],
@@ -32,32 +34,35 @@ public class CharacterSheet extends JFrame {
             totalSkills = new JTextField[35], rankSkills = new JTextField[35], trainedSkills = new JTextField[35],
             miscSkills = new JTextField[35], mods = new JTextField[45]; //OJO, ir aumentando el tamaño segun los use!!!!!!!!
 
-    JTextField totalHP, languages, currentHP, damage, armorPenalty, maxDex, conMod, totalInit, modInit;
+    JTextField totalHP, languages, currentHP, damage, armorPenalty, maxDex, conMod, totalInit, modInit, prof;
     JButton addWeapon, addArmor, seeEquipment, seeSpells;
     JLabel labtotalHP, labcurrentHP, labdamage, labConditions, labinit, equalInit, plusInit;
-    ArrayList<JTextField[]> weapons, armor;
+    JTextField[] chosenWeapon, chosenArmor;
     ArrayList<JLabel> feats;
     ArrayList<JLabel> features;
     ArrayList<JLabel> equipment;
     int x, y, w, h;
     int modsCount = 0;
+    public static Font miniPFONT = new Font("Monospaced", Font.BOLD, 11);
 
     /*TO-DO:
     - leer y guardar fichas
-    - hacer suma fila init
-    - cambiar botones addWeapon y addArmor por JComboBox chooseWeapon y chooseArmor
-    - jtextfield dentro del label prof de skills
+    - eliminar armor/weapon
+    - onclick en weapon damage se amplia si es necesario
+    - que no se pueda agregar una vacía (sin nombre al menos)
     - El espacio muerto se llena al pulsar equipment o spells
     - feats
-    - acabar armor and weapons
+    - acabar armorInt and weapons
     - boton dice roller
-    - texfield damage responsive: aumenta cuando los daños no quepan, disminuye al reducirse
-    - current HP se calcula al meter damage (en positivo)
     - MenuBar con opciones (Nueva ficha, cargar ficha, salir...)
-    - checkboxes a las skills
-    - añadir texfield totalHP para que el texfield de damages baje más
     - aumentar el tamaño del...scroll?totalPanel? para poder meter el panel spells/equipment
+    - que el elemento de la defaultComboBoxModel cambie su nombre al cambiarlo en el textfield*
      */
+    
+    
+//                      * cs.st.weaponNames.removeElementAt(indiceActual);   PROBAR ESTO:
+//                        cs.st.weaponNames.insertElementAt(cs.st.weaponsList.get(indiceActual)[0].getText(), indx);
+                        
     public CharacterSheet(boolean nuevoPersonaje, String personaje) {
 
         super(personaje);
@@ -79,7 +84,7 @@ public class CharacterSheet extends JFrame {
 
         panelHP = new JPanel();
         panelHP.setLayout(null);
-        panelHP.setBounds(panelStats.getX() + panelStats.getWidth() + 20, panelStats.getY() + 6, 75, 145);
+        panelHP.setBounds(panelStats.getX() + panelStats.getWidth() + 20, panelStats.getY() + 16, 75, 111);
         hp();
         totalPanel.add(panelHP);
 
@@ -95,7 +100,7 @@ public class CharacterSheet extends JFrame {
 
         panelAtAndDef = new JPanel();
         panelAtAndDef.setLayout(null);
-        panelAtAndDef.setBounds(panelStats.getX(), panelStats.getY() + panelStats.getHeight() + 25, 290, 325);
+        panelAtAndDef.setBounds(panelStats.getX(), panelStats.getY() + panelStats.getHeight() + 45, 290, 325);
         panelAtAndDef.setBackground(Color.LIGHT_GRAY);
         ac();
         saves();
@@ -107,29 +112,28 @@ public class CharacterSheet extends JFrame {
         panelSkills.setBounds(panelHP.getX() + panelHP.getWidth() + 165, panelStats.getY(), 330, 760);
         skills();
         totalPanel.add(panelSkills);
-        
+
         init();
 
         panelArmor = new JPanel();
         panelArmor.setLayout(null);
-        panelArmor.setBounds(panelAtAndDef.getX() + panelAtAndDef.getWidth() + 25, totalInit.getY() + totalInit.getHeight() + 20,
-                            210, 100);
+        panelArmor.setBounds(panelAtAndDef.getX() + panelAtAndDef.getWidth() + 25, panelAtAndDef.getY(), 210, 100);
         panelArmor.setBorder(BorderFactory.createTitledBorder(null, "ARMOR", TitledBorder.CENTER, TitledBorder.TOP, Menu.PFONT));
         armor();
         totalPanel.add(panelArmor);
 
         panelWeapons = new JPanel();
         panelWeapons.setLayout(null);
-        panelWeapons.setBounds(panelArmor.getX(), panelArmor.getY() + panelArmor.getHeight() + 20, 210, 100);
+        panelWeapons.setBounds(panelArmor.getX(), panelArmor.getY() + panelArmor.getHeight() + 40, 210, 100);
         panelWeapons.setBorder(BorderFactory.createTitledBorder(null, "WEAPONS", TitledBorder.CENTER, TitledBorder.TOP, Menu.PFONT));
         weapons();
         totalPanel.add(panelWeapons);
-        
+
         seeEquipment = new JButton("<html><h4>EQUIPMENT</h4></html>");
         seeEquipment.setFont(Menu.PFONT);
         seeEquipment.setBackground(Color.LIGHT_GRAY);
         seeEquipment.setForeground(Menu.DARKER_GRAY);
-        seeEquipment.setBounds(panelWeapons.getX()+2, panelAtAndDef.getY() + panelAtAndDef.getHeight() -30, 95, 30);
+        seeEquipment.setBounds(panelWeapons.getX() + 2, panelAtAndDef.getY() + panelAtAndDef.getHeight() - 30, 95, 30);
 //        seeEquipment.setIcon(new ImageIcon(CharacterSheet.class.getResource("img/backpack.png")));
         totalPanel.add(seeEquipment);
 
@@ -143,7 +147,7 @@ public class CharacterSheet extends JFrame {
 
         borderPanelFeats = new JPanel();
         borderPanelFeats.setLayout(null);
-        borderPanelFeats.setBounds(panelAtAndDef.getX(), panelAtAndDef.getY() + panelAtAndDef.getHeight() + 20, 523, 237);
+        borderPanelFeats.setBounds(panelAtAndDef.getX(), panelAtAndDef.getY() + panelAtAndDef.getHeight() + 20, 523, 217);
         borderPanelFeats.setBackground(Color.DARK_GRAY);
 
         titlePanelFeats = new JPanel();
@@ -168,9 +172,9 @@ public class CharacterSheet extends JFrame {
         setContentPane(scroll);  //THIS!!
 
         if (!nuevoPersonaje) {
-            //setText de todos los textfield con los datos guardados. En el caso de armor&weapons guardar una fila con un int 
-            //y crear ese numero de JTextFields[5] dentro del ArrayList armor y lo mismo en el caso de weapons y luego llamar a
-            //la función armor y weapons y después setText.
+            //setText de todos los textfield con los datos guardados. En el caso de armorInt&weapons guardar una fila con un int 
+            //y crear ese numero de JTextFields[5] dentro del ArrayList armorInt y lo mismo en el caso de weapons y luego llamar a
+            //la función armorInt y weapons y después setText.
         }
     }
 
@@ -358,6 +362,8 @@ public class CharacterSheet extends JFrame {
         totalHP = new JTextField();
         totalHP.setBounds(20, labtotalHP.getHeight(), 30, 30);
         totalHP.setHorizontalAlignment(JTextField.CENTER);
+        totalHP.addKeyListener(new Handler(this));
+        totalHP.setName("hp");
         panelHP.add(totalHP);
 
         labcurrentHP = new JLabel("<html><h6>CURRENT HP</h6></html>");
@@ -368,6 +374,7 @@ public class CharacterSheet extends JFrame {
         currentHP = new JTextField();
         currentHP.setBounds(10, labcurrentHP.getY() + labcurrentHP.getHeight(), 50, 50);
         currentHP.setHorizontalAlignment(JTextField.CENTER);
+        currentHP.setEditable(false);
         panelHP.add(currentHP);
 
         labdamage = new JLabel("<html><h6>DAMAGE</h6></html>");
@@ -376,11 +383,12 @@ public class CharacterSheet extends JFrame {
         panelHP.add(labdamage);
 
         damage = new JTextField();
-        damage.setBounds(10, labdamage.getY() + 10, 50, 20);
+        damage.setBounds(panelStats.getX() + panelStats.getWidth() + 30, panelHP.getY() + panelHP.getHeight(), 50, 20);
         damage.setHorizontalAlignment(JTextField.CENTER);
-        damage.setName("damage");
-        damage.addKeyListener(new Handler(this)); //cuando texto.length sea mayor a x, aumentar, si no restaura
-        panelHP.add(damage);
+        damage.setName("hp");
+        damage.addKeyListener(new Handler(this));
+        totalPanel.add(damage);
+        //panelHP.add(damage);        
     }
 
     private void ac() {
@@ -434,11 +442,11 @@ public class CharacterSheet extends JFrame {
                 x = totalDefense[i].getX() + totalDefense[i].getWidth() + 5;
                 armorDefense[j] = new JTextField(0);
                 armorDefense[j].setBounds(x, y, w, h);
-                armorDefense[j].setName("0" + i);                            //nombres de 2 cifras => 1ª=tabla, 2ª=fila
+                armorDefense[j].setEditable(false);
                 armorDefense[j].addKeyListener(new Handler(this));
                 armorDefense[j].setHorizontalAlignment(JTextField.CENTER);
                 panelAtAndDef.add(armorDefense[j]);
-                j++;    //añadimos j porque hay que dejar un hueco entre armor[0] y armor [1]
+                j++;    //añadimos j porque hay que dejar un hueco entre armorInt[0] y armorInt [1]
             }
         }
 
@@ -461,7 +469,7 @@ public class CharacterSheet extends JFrame {
             x = mods[1].getX() + mods[1].getWidth() + 5;
             sizeDefense[i] = new JTextField(0);
             sizeDefense[i].setBounds(x, y, w, h);
-            sizeDefense[i].setName("0" + i);
+            sizeDefense[i].setName("0" + i);   //nombres de 2 cifras => 1ª=tabla, 2ª=fila
             sizeDefense[i].addKeyListener(new Handler(this));
             sizeDefense[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(sizeDefense[i]);
@@ -724,25 +732,39 @@ public class CharacterSheet extends JFrame {
 
         x = colSkills[0].getX() - 145;
         y = colSkills[0].getY() + 15;
-        w = 150;
         h = 20;
+        w = 150;
 
-        for (int i = 0; i < tSkills.length; i++, y += 21) {
-            tSkills[i] = new JLabel(" " + st.tSkills[i]);
-            tSkills[i].setBounds(x, y, w, h);
-            tSkills[i].setForeground(Menu.KHAKI);
-            tSkills[i].setBackground(i % 2 == 0 ? Color.DARK_GRAY : Menu.DARKER_GRAY);
-            tSkills[i].setBorder(BorderFactory.createLineBorder(Color.BLACK));
-            tSkills[i].setOpaque(true);
-            tSkills[i].setHorizontalAlignment(JLabel.LEFT);
-            panelSkills.add(tSkills[i]);
+        for (int i = 0; i < chkSkills.length; i++, y += 21) {
+            chkSkills[i] = new JCheckBox(" " + st.tSkills[i]);
+            if (i != 26) {
+                chkSkills[i].setBounds(x, y, w, h);
+            } else {
+                chkSkills[i].setBounds(x, y, w - 87, h);
+                prof = new JTextField();
+                prof.setBounds(x + 63, y, 87, h);
+                prof.setForeground(Menu.KHAKI);
+                prof.setBackground(i % 2 == 0 ? Color.DARK_GRAY : Menu.DARKER_GRAY);
+                prof.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                prof.setHorizontalAlignment(JLabel.LEFT);
+                panelSkills.add(prof);
+            }
+
+            chkSkills[i].setForeground(Menu.KHAKI);
+            chkSkills[i].setBackground(i % 2 == 0 ? Color.DARK_GRAY : Menu.DARKER_GRAY);
+            chkSkills[i].setBorder(BorderFactory.createLineBorder(Color.BLACK));
+            chkSkills[i].setHorizontalAlignment(JLabel.LEFT);
+            chkSkills[i].addItemListener(new Handler(this));
+            chkSkills[i].setName("S" + i);
+            chkSkills[i].setOpaque(true);
+            panelSkills.add(chkSkills[i]);
         }
 
         w = 30;
         y = colSkills[0].getY() + 15;
 
         for (int i = 0; i < totalSkills.length; i++, y += 21) {
-            x = tSkills[i].getX() + tSkills[i].getWidth() + 5;
+            x = chkSkills[0].getX() + chkSkills[0].getWidth() + 5;
             totalSkills[i] = new JTextField(0);
             totalSkills[i].setBounds(x, y, w, h);
             totalSkills[i].setEditable(false);
@@ -816,7 +838,7 @@ public class CharacterSheet extends JFrame {
             trainedSkills[i] = new JTextField(0);
             trainedSkills[i].setBounds(x, y, w, h);
             trainedSkills[i].addKeyListener(new Handler(this));
-            trainedSkills[i].setName("3" + i);
+            trainedSkills[i].setEditable(false);
             trainedSkills[i].setHorizontalAlignment(JTextField.CENTER);
             panelSkills.add(trainedSkills[i]);
         }
@@ -857,35 +879,14 @@ public class CharacterSheet extends JFrame {
         w = 73;
         h = 20;
 
-        addArmor = new JButton("<html><h4>ADD ARMOR</h4></html>");
-        addArmor.addActionListener(new Handler(this));
+        chooseArmor = new JComboBox();
+        chooseArmor.setModel(st.armorNames);
+        chooseArmor.setSelectedIndex(0);
+        chooseArmor.addActionListener(new Handler(this));
+        chooseArmor.setBounds((panelArmor.getWidth() / 2) - 55, colArmor[0].getY() + colArmor[0].getHeight() + 20, 110, 20);
+        chooseArmor.setFont(miniPFONT);
+        panelArmor.add(chooseArmor);
 
-        if (armor != null) {
-            for (int j = 0; j < armor.size(); j++) {
-                for (int i = 0; i < armor.get(j).length; i++, x += 26) {
-                    armor.get(j)[i] = new JTextField();
-                    armor.get(j)[i].setBounds(x, y, w, h);
-                    armor.get(j)[i].setHorizontalAlignment(JLabel.CENTER);
-                    panelArmor.add(armor.get(j)[i]);
-                    if (i == 0) {
-                        x += 48;
-                        w = 25;
-                    }
-                }
-                x = colArmor[0].getX() - 27;
-                y = armor.get(j)[0].getY() + armor.get(j)[0].getHeight() + 1;
-                w = 73;
-                h = 20;
-
-                panelArmor.setSize(panelArmor.getWidth(), panelArmor.getHeight() + armor.get(0)[0].getHeight());
-            }
-            addArmor.setBounds((panelArmor.getWidth() / 2) - 50, armor.get(armor.size() - 1)[0].getY() + armor.get(0)[0].getHeight()
-                    + 20, 100, 20);
-        } else {
-            addArmor.setBounds((panelArmor.getWidth() / 2) - 55, colArmor[0].getY() + colArmor[0].getHeight() + 20, 110, 20);
-        }
-        addArmor.setFont(Menu.PFONT);
-        panelArmor.add(addArmor);
     }
 
     private void weapons() {
@@ -897,7 +898,7 @@ public class CharacterSheet extends JFrame {
 
         for (int i = 0; i < colWeapons.length; i++, x += 26) {
             colWeapons[i] = new JLabel("<html><h6>" + st.colWeapon[i] + "</h6></html>");
-            colWeapons[i].setBounds(x, y, w, h);
+            colWeapons[i].setBounds(x, y, i==3?w+20:w, h);
             colWeapons[i].setHorizontalAlignment(JLabel.CENTER);
             panelWeapons.add(colWeapons[i]);
             if (i == 0) {
@@ -911,45 +912,22 @@ public class CharacterSheet extends JFrame {
         w = 73;
         h = 20;
 
-        addWeapon = new JButton("<html><h4>ADD WEAPON</h4></html>");
-        addWeapon.addActionListener(new Handler(this));
-
-        if (weapons != null) {
-            for (int i = 0; i < weapons.size(); i++, x += 26) {
-                for (int j = 0; j < weapons.get(i).length; j++) {
-                    weapons.get(i)[j] = new JTextField();
-                    weapons.get(i)[j].setBounds(x, y, w, h);
-                    weapons.get(i)[j].setHorizontalAlignment(JLabel.CENTER);
-                    panelWeapons.add(weapons.get(i)[j]);
-                    if (i == 0) {
-                        x += 48;
-                        w -= 48;
-                    }
-                }
-                x = colWeapons[0].getX() - 27;
-                y = weapons.get(i)[0].getY() + weapons.get(i)[0].getHeight() + 1;
-                w = 73;
-                h = 20;
-
-                panelWeapons.setSize(panelWeapons.getWidth(), panelWeapons.getHeight() + weapons.get(0)[0].getHeight());
-            }
-
-            addWeapon.setBounds((panelWeapons.getWidth() / 2) - 50, weapons.get(weapons.size() - 1)[0].getY() + weapons.get(0)[0].getHeight()
-                    + 20, 100, 20);
-        } else {
-            addWeapon.setBounds((panelWeapons.getWidth() / 2) - 55, colWeapons[0].getY() + colWeapons[0].getHeight() + 20, 110, 20);
-        }
-        addWeapon.setFont(Menu.PFONT);
-        panelWeapons.add(addWeapon);
+        chooseWeapon = new JComboBox();
+        chooseWeapon.setModel(st.weaponNames);
+        chooseWeapon.setSelectedIndex(0);
+        chooseWeapon.addActionListener(new Handler(this));
+        chooseWeapon.setBounds((panelWeapons.getWidth() / 2) - 55, colWeapons[0].getY() + colWeapons[0].getHeight() + 20, 110, 20);
+        chooseWeapon.setFont(miniPFONT);
+        panelWeapons.add(chooseWeapon);
     }
 
     private void init() {
-        
+
         h = 20;
 
         labinit = new JLabel(" INIT ");
 //        labinit.setBounds(panelWeapons.getX(), panelWeapons.getY() + panelWeapons.getHeight() + 20, 60, h);
-        labinit.setBounds(panelAtAndDef.getX() + panelAtAndDef.getWidth() + 30, panelAtAndDef.getY()-15, 60, h);
+        labinit.setBounds(panelStats.getX() + 90, panelStats.getY() + panelStats.getHeight() + 10, 60, h);
         labinit.setForeground(Menu.KHAKI);
         labinit.setBackground(Menu.DARKER_GRAY);
         labinit.setOpaque(true);
@@ -965,25 +943,27 @@ public class CharacterSheet extends JFrame {
         totalInit.setEditable(false);
         totalInit.setHorizontalAlignment(JTextField.CENTER);
         totalPanel.add(totalInit);
-        
+
         equalInit = new JLabel("=");
-        equalInit.setBounds(totalInit.getX()+totalInit.getWidth()+5,y,10,h);
+        equalInit.setBounds(totalInit.getX() + totalInit.getWidth() + 5, y, 10, h);
         totalPanel.add(equalInit);
-        
+
         mods[44] = new JTextField();
-        mods[44].setBounds(equalInit.getX()+equalInit.getWidth()+5,y,w,h);
+        mods[44].setBounds(equalInit.getX() + equalInit.getWidth() + 5, y, w, h);
         mods[44].setHorizontalAlignment(JTextField.CENTER);
         mods[44].setEditable(false);
-        mods[44].setName(1+"");
+        mods[44].setName(1 + "");
         totalPanel.add(mods[44]);
-        
+
         plusInit = new JLabel("+");
-        plusInit.setBounds(mods[44].getX()+mods[44].getWidth()+2,y,10,h);
+        plusInit.setBounds(mods[44].getX() + mods[44].getWidth() + 2, y, 10, h);
         totalPanel.add(plusInit);
-        
+
         modInit = new JTextField();
-        modInit.setBounds(plusInit.getX()+plusInit.getWidth()+2, y, w, h);
+        modInit.setBounds(plusInit.getX() + plusInit.getWidth() + 2, y, w, h);
         modInit.setHorizontalAlignment(JTextField.CENTER);
+        modInit.setName("init");
+        modInit.addKeyListener(new Handler(this));
         totalPanel.add(modInit);
 
     }
@@ -1010,3 +990,61 @@ public class CharacterSheet extends JFrame {
 //                h = 20;
 //            }
 //        }
+//        addWeapon = new JButton("<html><h4>ADD WEAPON</h4></html>");
+//        addWeapon.addActionListener(new Handler(this));
+//        addArmor = new JButton("<html><h4>ADD ARMOR</h4></html>");
+//        addArmor.addActionListener(new Handler(this));
+//                ARMOR, calculo con el boton::
+//if (armor != null) {
+//            for (int j = 0; j < armor.size(); j++) {
+//                for (int i = 0; i < armor.get(j).length; i++, x += 26) {
+//                    armor.get(j)[i] = new JTextField();
+//                    armor.get(j)[i].setBounds(x, y, w, h);
+//                    armor.get(j)[i].setHorizontalAlignment(JLabel.CENTER);
+//                    panelArmor.add(armor.get(j)[i]);
+//                    if (i == 0) {
+//                        x += 48;
+//                        w = 25;
+//                    }
+//                }
+//                x = colArmor[0].getX() - 27;
+//                y = armor.get(j)[0].getY() + armor.get(j)[0].getHeight() + 1;
+//                w = 73;
+//                h = 20;
+//
+//                panelArmor.setSize(panelArmor.getWidth(), panelArmor.getHeight() + armor.get(0)[0].getHeight());
+//            }
+//            chooseArmor.setBounds((panelArmor.getWidth() / 2) - 50, armor.get(armor.size() - 1)[0].getY() + armor.get(0)[0].getHeight()
+//                    + 20, 100, 20);
+//        } else {
+//            chooseArmor.setBounds((panelArmor.getWidth() / 2) - 55, colArmor[0].getY() + colArmor[0].getHeight() + 20, 110, 20);
+//        }
+//        chooseArmor.setFont(Menu.PFONT);
+//        panelArmor.add(chooseArmor);
+// if (weapons != null) {
+//            for (int i = 0; i < weapons.size(); i++, x += 26) {
+//                for (int j = 0; j < weapons.get(i).length; j++) {
+//                    weapons.get(i)[j] = new JTextField();
+//                    weapons.get(i)[j].setBounds(x, y, w, h);
+//                    weapons.get(i)[j].setHorizontalAlignment(JLabel.CENTER);
+//                    panelWeapons.add(weapons.get(i)[j]);
+//                    if (i == 0) {
+//                        x += 48;
+//                        w -= 48;
+//                    }
+//                }
+//                x = colWeapons[0].getX() - 27;
+//                y = weapons.get(i)[0].getY() + weapons.get(i)[0].getHeight() + 1;
+//                w = 73;
+//                h = 20;
+//
+//                panelWeapons.setSize(panelWeapons.getWidth(), panelWeapons.getHeight() + weapons.get(0)[0].getHeight());
+//            }
+//
+//            addWeapon.setBounds((panelWeapons.getWidth() / 2) - 50, weapons.get(weapons.size() - 1)[0].getY() + weapons.get(0)[0].getHeight()
+//                    + 20, 100, 20);
+//        } else {
+//            addWeapon.setBounds((panelWeapons.getWidth() / 2) - 55, colWeapons[0].getY() + colWeapons[0].getHeight() + 20, 110, 20);
+//        }
+//        addWeapon.setFont(Menu.PFONT);
+//        panelWeapons.add(addWeapon);
