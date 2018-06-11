@@ -13,8 +13,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import javax.swing.JComboBox;
+import static javax.swing.JFrame.EXIT_ON_CLOSE;
 import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import static javax.swing.WindowConstants.DISPOSE_ON_CLOSE;
 
@@ -25,14 +25,17 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
     int mod;
     ChooseArmor ca;
     ChooseWeapon cw;
+    ChooseName cn;
+    String personaje;
     int maxDex = -10;
 
-    public Handler(Menu m) {
-        this.m = m;
-    }
-
-    public Handler(CharacterSheet cs) {
-        this.cs = cs;
+    public Handler() {
+        m = new Menu(this);
+        m.setSize(600, 400);
+        m.setVisible(true);
+        m.setResizable(false);
+        m.setDefaultCloseOperation(EXIT_ON_CLOSE);
+        m.setLocationRelativeTo(null);
     }
 
     @Override
@@ -48,129 +51,163 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        if (m != null) {
+        if (e.getSource().getClass() == JMenuItem.class) {
+
             if (e.getSource() == m.salir) {
                 System.exit(0);
             }
+            personaje = "";
 
-            if (e.getSource() == m.nuevaFicha || e.getSource() == m.sheets) {
+            if (e.getSource() == m.nuevaFicha) {
 
-                CharacterSheet cs = new CharacterSheet(e.getSource() == m.nuevaFicha, e.getSource() == m.nuevaFicha ? ""
-                        : m.ss.hojaPersonaje(((JMenuItem) (e.getSource())).getText().trim()));
-                cs.setSize(935, 680);
-                cs.setVisible(true);
-                cs.setResizable(true);
-                cs.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-                cs.setLocationRelativeTo(null);
-
+                cn = new ChooseName(this);
+                cn.setSize(200, 140);
+                cn.setResizable(false);
+                cn.setLocationRelativeTo(null);
+                cn.setVisible(true);
+                cn.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
             }
-        }
 
-        if (cs != null) {
-            if (e.getSource().getClass() == JComboBox.class) {
-                JComboBox combo = (JComboBox) e.getSource();
+            if (((JMenuItem) e.getSource()).getName().equals("sheet")) {
+                personaje = ((JMenuItem) (e.getSource())).getText().trim();
+                String rutaFicha = m.ss.hojaPersonaje(((JMenuItem) (e.getSource())).getText().trim());
+                m.ss.abrirFicha(rutaFicha);
+                cargarHoja();
+            }
 
-                if (combo == cs.chooseArmor) {
-                    if (combo.getSelectedItem() == cs.chooseArmor.getModel().getElementAt(cs.chooseArmor.getModel().getSize() - 1)) {
-                        ca = new ChooseArmor(this);
-                        ca.setSize(280, 210);
-                        ca.setResizable(false);
-                        ca.setLocationRelativeTo(null);
-                        ca.setVisible(true);
-                        ca.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-
-                    } else {
-                        int indx = combo.getSelectedIndex();
-                        int x = cs.colArmor[0].getX() - 1;
-                        int y = cs.colArmor[0].getY() + cs.colArmor[0].getHeight() + 1;
-                        int w = 73;
-                        int h = 20;
-
-                        if (cs.chosenArmor != null) {
-                            try {
-                                int pen = Integer.parseInt(cs.chosenArmor[3].getText());
-                                for (int i = 0; i < cs.miscSkills.length; i++) {
-                                    if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
-                                        try {
-                                            cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().equals("")?"0":
-                                                    cs.miscSkills[i].getText()) + pen) + "");
-                                        } catch (NumberFormatException n) {
-                                        }
-                                    }
-                                }
-                            } catch (NumberFormatException n) {
-                            }
-                            for (int i = cs.chosenArmor.length - 1; i >= 0; i--) {
-                                cs.panelArmor.remove(cs.chosenArmor[i]);
-                            }
-                        }
-                        maxDex = -10;
-                        modifiers(1, "stat");
-
-                        for (int i = 0; i < cs.st.armorList.get(indx).length; i++, x += 26) {
-                            cs.chosenArmor = cs.st.armorList.get(indx);
-                            cs.chosenArmor[i].setBounds(x, y, w, h);
-                            cs.chosenArmor[i].setText(cs.st.armorList.get(indx)[i].getText()
-                                    + (cs.st.armorList.get(indx)[i].getText().equals("") ? " " : ""));
-                            cs.chosenArmor[i].setHorizontalAlignment(JTextField.CENTER);
-                            cs.chosenArmor[i].setName("armor");
-                            cs.chosenArmor[i].addKeyListener(this);
-                            cs.panelArmor.add(cs.chosenArmor[i]);
-                            if (i == 0) {
-                                x += 48;
-                                w = 25;
-                            }
-                        }
-                        cs.chooseArmor.setBounds(cs.chooseArmor.getX(), cs.chosenArmor[0].getY() + cs.chosenArmor[0].getHeight()
-                                + 15, cs.chooseArmor.getWidth(), cs.chooseArmor.getHeight());
-                        cs.panelArmor.setSize(210, 121);
-                        modifiers(0, "armor");
-                    }
+            if (cs != null) {
+                if (e.getSource() == cs.newf) {
                 }
 
-                if (combo == cs.chooseWeapon) {
-                    if (combo.getSelectedItem() == cs.chooseWeapon.getModel().getElementAt(cs.chooseWeapon.getModel().getSize() - 1)) {
-                        cw = new ChooseWeapon(this);
-                        cw.setSize(280, 185);
-                        cw.setResizable(false);
-                        cw.setLocationRelativeTo(null);
-                        cw.setVisible(true);
-                        cw.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+                if (e.getSource() == cs.openf) {
+                }
 
-                    } else {
-                        int indx = combo.getSelectedIndex();
-                        int x = cs.colWeapons[0].getX() - 1;
-                        int y = cs.colWeapons[0].getY() + cs.colWeapons[0].getHeight() + 1;
-                        int w = 73;
-                        int h = 20;
-                        // StringBuilder aux = cs.st.weaponNames.getElementAt(indx);
+                if (e.getSource() == cs.recentf) {
+                }
+
+                if (e.getSource() == cs.savef) {
+                    m.ss.guardarDatos(cs);
+                }
+
+                if (e.getSource() == cs.exit) {
+                }
+
+                if (e.getSource() == cs.resetAll) {
+                }
+
+                if (e.getSource() == cs.diceRoller) {
+                }
+
+                if (e.getSource() == cs.activateToolTips) {
+                }
+
+                if (e.getSource() == cs.about) {
+                }
+            }
+        }
+        if (e.getSource().getClass() == JComboBox.class) {
+            JComboBox combo = (JComboBox) e.getSource();
+
+            if (combo == cs.chooseArmor) {
+                if (combo.getSelectedItem() == cs.chooseArmor.getModel().getElementAt(cs.chooseArmor.getModel().getSize() - 1)) {
+                    ca = new ChooseArmor(this);
+                    ca.setSize(280, 210);
+                    ca.setResizable(false);
+                    ca.setLocationRelativeTo(null);
+                    ca.setVisible(true);
+                    ca.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+                } else {
+                    int indx = combo.getSelectedIndex();
+                    int x = cs.colArmor[0].getX() - 1;
+                    int y = cs.colArmor[0].getY() + cs.colArmor[0].getHeight() + 1;
+                    int w = 73;
+                    int h = 20;
+
+                    if (cs.chosenArmor != null) {
+                        try {
+                            int pen = Integer.parseInt(cs.chosenArmor[3].getText());
+                            for (int i = 0; i < cs.miscSkills.length; i++) {
+                                if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
+                                    try {
+                                        cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().equals("") ? "0"
+                                                : cs.miscSkills[i].getText()) + pen) + "");
+                                    } catch (NumberFormatException n) {
+                                    }
+                                }
+                            }
+                        } catch (NumberFormatException n) {
+                        }
+                        for (int i = cs.chosenArmor.length - 1; i >= 0; i--) {
+                            cs.panelArmor.remove(cs.chosenArmor[i]);
+                        }
+                    }
+                    maxDex = -10;
+                    modifiers(1, "stat");
+
+                    for (int i = 0; i < cs.st.armorList.get(indx).length; i++, x += 26) {
+                        cs.chosenArmor = cs.st.armorList.get(indx);
+                        cs.chosenArmor[i].setBounds(x, y, w, h);
+                        cs.chosenArmor[i].setText(cs.st.armorList.get(indx)[i].getText()
+                                + (cs.st.armorList.get(indx)[i].getText().equals("") ? " " : ""));
+                        cs.chosenArmor[i].setHorizontalAlignment(JTextField.CENTER);
+                        cs.chosenArmor[i].setName("armor");
+                        cs.chosenArmor[i].addKeyListener(this);
+                        cs.panelArmor.add(cs.chosenArmor[i]);
+                        if (i == 0) {
+                            x += 48;
+                            w = 25;
+                        }
+                    }
+                    cs.chooseArmor.setBounds(cs.chooseArmor.getX(), cs.chosenArmor[0].getY() + cs.chosenArmor[0].getHeight()
+                            + 15, cs.chooseArmor.getWidth(), cs.chooseArmor.getHeight());
+                    cs.panelArmor.setSize(210, 121);
+                    modifiers(0, "armor");
+                }
+            }
+
+            if (combo == cs.chooseWeapon) {
+                if (combo.getSelectedItem() == cs.chooseWeapon.getModel().getElementAt(cs.chooseWeapon.getModel().getSize() - 1)) {
+                    cw = new ChooseWeapon(this);
+                    cw.setSize(280, 185);
+                    cw.setResizable(false);
+                    cw.setLocationRelativeTo(null);
+                    cw.setVisible(true);
+                    cw.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+                } else {
+                    int indx = combo.getSelectedIndex();
+                    int x = cs.colWeapons[0].getX() - 1;
+                    int y = cs.colWeapons[0].getY() + cs.colWeapons[0].getHeight() + 1;
+                    int w = 73;
+                    int h = 20;
+                    // StringBuilder aux = cs.st.weaponNames.getElementAt(indx);
 //                        ((String)(cs.st.weaponNames.getElementAt(indx))) = cs.st.weaponsList.get(indx)[0].getText();
 
-                        if (cs.chosenWeapon != null) {
-                            for (int i = cs.chosenWeapon.length - 1; i >= 0; i--) {
-                                cs.panelWeapons.remove(cs.chosenWeapon[i]);
-                            }
+                    if (cs.chosenWeapon != null) {
+                        for (int i = cs.chosenWeapon.length - 1; i >= 0; i--) {
+                            cs.panelWeapons.remove(cs.chosenWeapon[i]);
                         }
-
-                        for (int i = 0; i < cs.st.weaponsList.get(indx).length; i++, x += 26) {
-                            cs.chosenWeapon = cs.st.weaponsList.get(indx);
-                            cs.chosenWeapon[i].setBounds(x, y, i==3?w+30:w, h);
-                            cs.chosenWeapon[i].setText(cs.st.weaponsList.get(indx)[i].getText()
-                                    + (cs.st.weaponsList.get(indx)[i].getText().equals("") ? " " : ""));
-                            cs.chosenWeapon[i].setFont(new Font(cs.chosenWeapon[i].getFont().getFontName(),Font.PLAIN,10));
-                            cs.chosenWeapon[i].setHorizontalAlignment(JTextField.CENTER);
-                            cs.chosenWeapon[i].addKeyListener(this);
-                            cs.panelWeapons.add(cs.chosenWeapon[i]);
-                            if (i == 0) {
-                                x += 48;
-                                w = 25;
-                            }
-                        }
-                        cs.chooseWeapon.setBounds(cs.chooseWeapon.getX(), cs.chosenWeapon[0].getY() + cs.chosenWeapon[0].getHeight()
-                                + 15, cs.chooseWeapon.getWidth(), cs.chooseWeapon.getHeight());
-                        cs.panelWeapons.setSize(210, 121);
-                        modifiers(0, "weapon");
                     }
+
+                    for (int i = 0; i < cs.st.weaponsList.get(indx).length; i++, x += 26) {
+                        cs.chosenWeapon = cs.st.weaponsList.get(indx);
+                        cs.chosenWeapon[i].setBounds(x, y, i == 3 ? w + 30 : w, h);
+                        cs.chosenWeapon[i].setText(cs.st.weaponsList.get(indx)[i].getText()
+                                + (cs.st.weaponsList.get(indx)[i].getText().equals("") ? " " : ""));
+                        cs.chosenWeapon[i].setFont(new Font(cs.chosenWeapon[i].getFont().getFontName(), Font.PLAIN, 10));
+                        cs.chosenWeapon[i].setHorizontalAlignment(JTextField.CENTER);
+                        cs.chosenWeapon[i].addKeyListener(this);
+                        cs.panelWeapons.add(cs.chosenWeapon[i]);
+                        if (i == 0) {
+                            x += 48;
+                            w = 25;
+                        }
+                    }
+                    cs.chooseWeapon.setBounds(cs.chooseWeapon.getX(), cs.chosenWeapon[0].getY() + cs.chosenWeapon[0].getHeight()
+                            + 15, cs.chooseWeapon.getWidth(), cs.chooseWeapon.getHeight());
+                    cs.panelWeapons.setSize(210, 121);
+                    modifiers(0, "weapon");
                 }
             }
         }
@@ -186,6 +223,14 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 cw.txdamage.getText()};
             cs.st.addWeapon(newWeapon);
             cw.dispose();
+        }
+
+        if (cn != null && e.getSource() == cn.ok) {
+            personaje = cn.txname.getText();
+            if (personaje != null && !personaje.trim().equals("")) {
+                cn.dispose();
+                cargarHoja();
+            }
         }
     }
 
@@ -254,49 +299,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     break;
 
                 case "hp":
-                    int HP = 0,
-                     hit;
-                    String ouch = "";
-                    ArrayList<Integer> damage = new ArrayList();
-
-                    if (cs.damage.getText().length() > 5) {
-                        cs.damage.setSize(cs.damage.getText().length() * 10, 20);
-                    } else {
-                        cs.damage.setSize(50, 20);
-                    }
-
-                    for (int i = 0, j = 0; i < cs.damage.getText().length(); i++) {
-                        if (cs.damage.getText().charAt(i) != '+') {
-                            ouch += cs.damage.getText().charAt(i);
-                        } else {
-                            try {
-                                hit = Integer.parseInt(ouch);
-                                damage.add(hit);
-                                ouch = "";
-                            } catch (NumberFormatException n) {
-                                ouch = "";
-                            }
-                        }
-                    }
-
-                    if (!ouch.equals("")) {
-                        try {
-                            hit = Integer.parseInt(ouch);
-                            damage.add(hit);
-                        } catch (NumberFormatException n) {
-                        }
-                    }
-
-                    try {
-                        HP = Integer.parseInt(cs.totalHP.getText());
-                    } catch (NumberFormatException n) {
-                    }
-
-                    for (int i = 0; i < damage.size(); i++) {
-                        HP -= damage.get(i);
-                    }
-
-                    cs.currentHP.setText(HP + "");
+                    calcularHp();
                     break;
 
                 case "init":
@@ -322,6 +325,45 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
         }
     }
 
+    private void calcularHp() {
+        int HP = 0, hit;
+        String ouch = "";
+        ArrayList<Integer> damage = new ArrayList();
+        if (cs.damage.getText().length() > 5) {
+            cs.damage.setSize(cs.damage.getText().length() * 10, 20);
+        } else {
+            cs.damage.setSize(50, 20);
+        }
+        for (int i = 0, j = 0; i < cs.damage.getText().length(); i++) {
+            if (cs.damage.getText().charAt(i) != '+') {
+                ouch += cs.damage.getText().charAt(i);
+            } else {
+                try {
+                    hit = Integer.parseInt(ouch.trim());
+                    damage.add(hit);
+                    ouch = "";
+                } catch (NumberFormatException n) {
+                    ouch = "";
+                }
+            }
+        }
+        if (!ouch.equals("")) {
+            try {
+                hit = Integer.parseInt(ouch.trim());
+                damage.add(hit);
+            } catch (NumberFormatException n) {
+            }
+        }
+        try {
+            HP = Integer.parseInt(cs.totalHP.getText().trim());
+        } catch (NumberFormatException n) {
+        }
+        for (int i = 0; i < damage.size(); i++) {
+            HP -= damage.get(i);
+        }
+        cs.currentHP.setText(HP + "");
+    }
+
     @Override
     public void mouseClicked(MouseEvent m) {
 
@@ -338,22 +380,22 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 value = 0;
 
                 try {
-                    value += Integer.parseInt(cs.baseStats[fila].getText());
+                    value += Integer.parseInt(cs.baseStats[fila].getText().trim());
                 } catch (NumberFormatException n) {
                     value += 0;
                 }
                 try {
-                    value += Integer.parseInt(cs.enhStats[fila].getText());
+                    value += Integer.parseInt(cs.enhStats[fila].getText().trim());
                 } catch (NumberFormatException n) {
                     value += 0;
                 }
                 try {
-                    value += Integer.parseInt(cs.miscStats[fila].getText());
+                    value += Integer.parseInt(cs.miscStats[fila].getText().trim());
                 } catch (NumberFormatException n) {
                     value += 0;
                 }
                 try {
-                    value += Integer.parseInt(cs.tempStats[fila].getText());
+                    value += Integer.parseInt(cs.tempStats[fila].getText().trim());
                 } catch (NumberFormatException n) {
                     value += 0;
                 }
@@ -374,8 +416,8 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     }
                 }
 
-                int cmd = cs.modStats[0].getText().equals("") ? 0 : Integer.parseInt(cs.modStats[0].getText());
-                cmd += cs.modStats[1].getText().equals("") ? 0 : Integer.parseInt(cs.modStats[1].getText());
+                int cmd = cs.modStats[0].getText().equals("") ? 0 : Integer.parseInt(cs.modStats[0].getText().trim());
+                cmd += cs.modStats[1].getText().equals("") ? 0 : Integer.parseInt(cs.modStats[1].getText().trim());
 
                 cs.mods[8].setText(cmd + "");
 
@@ -387,9 +429,9 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                  modD;
                 for (int i = 0; i < cs.BAB.length; i++) {
                     if (Integer.parseInt(cs.BAB[i].getName().charAt(1) + "") != fila) {
-                        cs.BAB[i].setText(cs.BAB[fila].getText());
-                        int totalfila = cs.totalAttack[i].getText().equals("") ? 0 : Integer.parseInt(cs.totalAttack[i].getText());
-                        int babfila = cs.BAB[i].getText().equals("") ? 0 : Integer.parseInt(cs.BAB[i].getText());
+                        cs.BAB[i].setText(cs.BAB[fila].getText().trim());
+                        int totalfila = cs.totalAttack[i].getText().equals("") ? 0 : Integer.parseInt(cs.totalAttack[i].getText().trim());
+                        int babfila = cs.BAB[i].getText().equals("") ? 0 : Integer.parseInt(cs.BAB[i].getText().trim());
                         cs.totalAttack[i].setText((babfila + totalfila) + "");
                     }
                 }
@@ -399,27 +441,27 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     value = 0;
 
                     try {
-                        value += Integer.parseInt(cs.BAB[i].getText());
+                        value += Integer.parseInt(cs.BAB[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.mods[i + 5].getText());
+                        value += Integer.parseInt(cs.mods[i + 5].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.sizeAttack[i].getText());
+                        value += Integer.parseInt(cs.sizeAttack[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.miscAttack[i].getText());
+                        value += Integer.parseInt(cs.miscAttack[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.tempAttack[i].getText());
+                        value += Integer.parseInt(cs.tempAttack[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
@@ -435,7 +477,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                     if (i == 0) {
                         try {
-                            value += Integer.parseInt(cs.armorDefense[i].getText());
+                            value += Integer.parseInt(cs.armorDefense[i].getText().trim());
                         } catch (NumberFormatException n) {
                             value += 0;
                         }
@@ -443,7 +485,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                     if (i == 2) {
                         try {
-                            value += Integer.parseInt(cs.armorDefense[1].getText());
+                            value += Integer.parseInt(cs.armorDefense[1].getText().trim());
                         } catch (NumberFormatException n) {
                             value += 0;
                         }
@@ -451,24 +493,24 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                     if (i != 2) {
                         try {
-                            value += Integer.parseInt(cs.mods[i].getText());
+                            value += Integer.parseInt(cs.mods[i].getText().trim());
                         } catch (NumberFormatException n) {
                             value += 0;
                         }
                     }
 
                     try {
-                        value += Integer.parseInt(cs.sizeDefense[i].getText());
+                        value += Integer.parseInt(cs.sizeDefense[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.miscDefense[i].getText());
+                        value += Integer.parseInt(cs.miscDefense[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.tempDefense[i].getText());
+                        value += Integer.parseInt(cs.tempDefense[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
@@ -483,27 +525,27 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     value = 0;
 
                     try {
-                        value += Integer.parseInt(cs.baseSaves[i].getText());
+                        value += Integer.parseInt(cs.baseSaves[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.mods[i + 2].getText());
+                        value += Integer.parseInt(cs.mods[i + 2].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.enhSaves[i].getText());
+                        value += Integer.parseInt(cs.enhSaves[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.miscSaves[i].getText());
+                        value += Integer.parseInt(cs.miscSaves[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.tempSaves[i].getText());
+                        value += Integer.parseInt(cs.tempSaves[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
@@ -518,22 +560,22 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     value = 0;
 
                     try {
-                        value += Integer.parseInt(cs.mods[i + 9].getText());
+                        value += Integer.parseInt(cs.mods[i + 9].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.rankSkills[i].getText());
+                        value += Integer.parseInt(cs.rankSkills[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.trainedSkills[i].getText());
+                        value += Integer.parseInt(cs.trainedSkills[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
                     try {
-                        value += Integer.parseInt(cs.miscSkills[i].getText());
+                        value += Integer.parseInt(cs.miscSkills[i].getText().trim());
                     } catch (NumberFormatException n) {
                         value += 0;
                     }
@@ -546,13 +588,13 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 value = 0;
 
                 try {
-                    value += Integer.parseInt(cs.modInit.getText());
+                    value += Integer.parseInt(cs.modInit.getText().trim());
                 } catch (NumberFormatException n) {
                     value += 0;
                 }
 
                 try {
-                    value += Integer.parseInt(cs.mods[44].getText());
+                    value += Integer.parseInt(cs.mods[44].getText().trim());
                 } catch (NumberFormatException n) {
                 }
 
@@ -562,7 +604,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
             case "armor":
 
                 try {
-                    value = Integer.parseInt(cs.chosenArmor[1].getText());
+                    value = Integer.parseInt(cs.chosenArmor[1].getText().trim());
                 } catch (NumberFormatException n) {
                     value = 0;
                 }
@@ -572,8 +614,8 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 }
 
                 try {
-                    maxDex = Integer.parseInt(cs.chosenArmor[2].getText());
-                    if (maxDex >= Integer.parseInt(cs.modStats[1].getText())) {
+                    maxDex = Integer.parseInt(cs.chosenArmor[2].getText().trim());
+                    if (maxDex >= Integer.parseInt(cs.modStats[1].getText().trim())) {
                         maxDex = -10;
                     }
                 } catch (NumberFormatException n) {
@@ -581,13 +623,13 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 }
 
                 try {
-                    value = Integer.parseInt(cs.chosenArmor[3].getText());
+                    value = Integer.parseInt(cs.chosenArmor[3].getText().trim());
 
                     for (int i = 0; i < cs.miscSkills.length; i++) {
                         if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
                             try {
-                                cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().equals("")?"0":
-                                        cs.miscSkills[i].getText()) - value) + "");
+                                cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().equals("") ? "0"
+                                        : cs.miscSkills[i].getText().trim()) - value) + "");
                             } catch (NumberFormatException n) {
                             }
                         }
@@ -612,8 +654,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
     }
 
     @Override
-    public void itemStateChanged(ItemEvent ie
-    ) {
+    public void itemStateChanged(ItemEvent ie) {
 
         Component check = (Component) ie.getSource();
         int fila = Integer.parseInt(((Component) (ie.getSource())).getName().substring(1));
@@ -629,5 +670,42 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 modifiers(fila, "skills");
                 break;
         }
+    }
+
+    public void cargarHoja() {
+        cs = new CharacterSheet(personaje, this, m.ss.stats, m.ss.defense, m.ss.saves, m.ss.attack, m.ss.skills,
+                m.ss.hp, m.ss.init);
+        cs.setSize(935, 680);
+        cs.setVisible(true);
+        cs.setResizable(true);
+        cs.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        cs.setLocationRelativeTo(null);
+        recalcularTodo(true);
+    }
+
+    public void recalcularTodo(boolean primeraVez) {
+
+        modifiers(0, "stat");
+        modifiers(1, "stat");
+        modifiers(2, "stat");
+        modifiers(3, "stat");
+        modifiers(4, "stat");
+        modifiers(5, "stat");
+        modifiers(0, "attack");
+        modifiers(0, "defense");
+        modifiers(0, "saves");
+        modifiers(0, "init");
+
+        calcularHp();
+        
+        if (primeraVez){
+            for (int i=0; i<cs.chkSkills.length;i++){
+                if (cs.chkSkills[i].isSelected()){
+                    cs.trainedSkills[i].setText(3 + "");
+                }
+            }
+        }
+                
+        modifiers(0, "skills");
     }
 }

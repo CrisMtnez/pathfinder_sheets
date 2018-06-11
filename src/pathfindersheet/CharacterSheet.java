@@ -44,6 +44,7 @@ public class CharacterSheet extends JFrame {
     int x, y, w, h;
     int modsCount = 0;
     public static Font miniPFONT = new Font("Monospaced", Font.BOLD, 11);
+    Handler ha;
 
     /*TO-DO:
     - leer y guardar fichas
@@ -58,16 +59,14 @@ public class CharacterSheet extends JFrame {
     - aumentar el tamaño del...scroll?totalPanel? para poder meter el panel spells/equipment
     - que el elemento de la defaultComboBoxModel cambie su nombre al cambiarlo en el textfield*
      */
-    
-    
 //                      * cs.st.weaponNames.removeElementAt(indiceActual);   PROBAR ESTO:
 //                        cs.st.weaponNames.insertElementAt(cs.st.weaponsList.get(indiceActual)[0].getText(), indx);
-                        
-    public CharacterSheet(boolean nuevoPersonaje, String personaje) {
+    public CharacterSheet(String personaje, Handler ha, String[][] stats, String[][] defense, String[][] saves,
+            String[][] attack, String[][] skills, String[] hp, String init) {
 
         super(personaje);
         setLayout(null);
-
+        this.ha = ha;
         menubar();
 
         st = new SheetText();
@@ -79,13 +78,13 @@ public class CharacterSheet extends JFrame {
         panelStats = new JPanel();
         panelStats.setLayout(null);
         panelStats.setBounds(20, 15, 290, 142);
-        stats();
+        stats(stats);
         totalPanel.add(panelStats);
 
         panelHP = new JPanel();
         panelHP.setLayout(null);
         panelHP.setBounds(panelStats.getX() + panelStats.getWidth() + 20, panelStats.getY() + 16, 75, 111);
-        hp();
+        hp(hp);
         totalPanel.add(panelHP);
 
         labConditions = new JLabel("CONDITIONS:");
@@ -95,25 +94,25 @@ public class CharacterSheet extends JFrame {
         conditions = new JComboBox(st.conditions);
         conditions.setBounds(panelHP.getX() + panelHP.getWidth() + 20, panelHP.getY() + 20, 120, 20);
         conditions.setSelectedIndex(-1);
-        conditions.addActionListener(new Handler(this));
+        conditions.addActionListener(ha);
         totalPanel.add(conditions);
 
         panelAtAndDef = new JPanel();
         panelAtAndDef.setLayout(null);
         panelAtAndDef.setBounds(panelStats.getX(), panelStats.getY() + panelStats.getHeight() + 45, 290, 325);
         panelAtAndDef.setBackground(Color.LIGHT_GRAY);
-        ac();
-        saves();
-        attacks();
+        ac(defense);
+        saves(saves);
+        attacks(attack);
         totalPanel.add(panelAtAndDef);
 
         panelSkills = new JPanel();
         panelSkills.setLayout(null);
         panelSkills.setBounds(panelHP.getX() + panelHP.getWidth() + 165, panelStats.getY(), 330, 760);
-        skills();
+        skills(skills);
         totalPanel.add(panelSkills);
 
-        init();
+        init(init);
 
         panelArmor = new JPanel();
         panelArmor.setLayout(null);
@@ -171,11 +170,9 @@ public class CharacterSheet extends JFrame {
         scroll.setBounds(0, 0, 855, 830);
         setContentPane(scroll);  //THIS!!
 
-        if (!nuevoPersonaje) {
-            //setText de todos los textfield con los datos guardados. En el caso de armorInt&weapons guardar una fila con un int 
-            //y crear ese numero de JTextFields[5] dentro del ArrayList armorInt y lo mismo en el caso de weapons y luego llamar a
-            //la función armorInt y weapons y después setText.
-        }
+        //setText de todos los textfield con los datos guardados. En el caso de armorInt&weapons guardar una fila con un int 
+        //y crear ese numero de JTextFields[5] dentro del ArrayList armorInt y lo mismo en el caso de weapons y luego llamar a
+        //la función armorInt y weapons y después setText.
     }
 
     private void menubar() {
@@ -188,31 +185,36 @@ public class CharacterSheet extends JFrame {
 
         newf = new JMenuItem("New");
         newf.setMnemonic('N');
-        newf.addActionListener(new Handler(this));
+        newf.setName("new");
+        newf.addActionListener(ha);
         file.add(newf);
 
         openf = new JMenuItem("Open...");
         openf.setMnemonic('O');
-        openf.addActionListener(new Handler(this));
+        openf.setName("open");
+        openf.addActionListener(ha);
         file.add(openf);
 
         recentf = new JMenuItem("Recent Sheets");
         recentf.setMnemonic('R');
-        recentf.addActionListener(new Handler(this));
+        recentf.setName("recent");
+        recentf.addActionListener(ha);
         file.add(recentf);
 
         file.addSeparator();
 
         savef = new JMenuItem("Save");
         savef.setMnemonic('S');
-        savef.addActionListener(new Handler(this));
+        savef.setName("save");
+        savef.addActionListener(ha);
         file.add(savef);
 
         file.addSeparator();
 
         exit = new JMenuItem("Exit");
         exit.setMnemonic('X');
-        exit.addActionListener(new Handler(this));
+        exit.setName("exit");
+        exit.addActionListener(ha);
         file.add(exit);
 
         bar.add(file);
@@ -222,12 +224,14 @@ public class CharacterSheet extends JFrame {
 
         resetAll = new JMenuItem("Reset All");   //pedir confirmación
         resetAll.setMnemonic('E');
-        resetAll.addActionListener(new Handler(this));
+        resetAll.setName("reset");
+        resetAll.addActionListener(ha);
         options.add(resetAll);
 
         diceRoller = new JMenuItem("Dice Roller");
         diceRoller.setMnemonic('D');
-        diceRoller.addActionListener(new Handler(this));
+        diceRoller.setName("dice");
+        diceRoller.addActionListener(ha);
         options.add(diceRoller);
 
         bar.add(options);
@@ -237,17 +241,19 @@ public class CharacterSheet extends JFrame {
 
         activateToolTips = new JMenuItem("ToolTips");  //hacerlo checkbox
         activateToolTips.setMnemonic('T');
+        activateToolTips.setName("tooltips");
         help.add(activateToolTips);
 
         about = new JMenuItem("About");
         about.setMnemonic('A');
+        about.setName("about");
         help.add(about);
 
         bar.add(help);
 
     }
 
-    private void stats() {
+    private void stats(String[][] stats) {
 
         x = 11;
         y = 0;
@@ -308,7 +314,8 @@ public class CharacterSheet extends JFrame {
             x = modStats[i].getX() + modStats[i].getWidth() + 5;
             baseStats[i] = new JTextField(0);
             baseStats[i].setBounds(x, y, w, h);
-            baseStats[i].addKeyListener(new Handler(this));
+            baseStats[i].setText(stats[0][i]);
+            baseStats[i].addKeyListener(ha);
             baseStats[i].setName(i + "");
             baseStats[i].setHorizontalAlignment(JTextField.CENTER);
             panelStats.add(baseStats[i]);
@@ -320,7 +327,8 @@ public class CharacterSheet extends JFrame {
             x = baseStats[i].getX() + baseStats[i].getWidth() + 5;
             enhStats[i] = new JTextField(0);
             enhStats[i].setBounds(x, y, w, h);
-            enhStats[i].addKeyListener(new Handler(this));
+            enhStats[i].setText(stats[1][i]);
+            enhStats[i].addKeyListener(ha);
             enhStats[i].setName(i + "");
             enhStats[i].setHorizontalAlignment(JTextField.CENTER);
             panelStats.add(enhStats[i]);
@@ -332,7 +340,8 @@ public class CharacterSheet extends JFrame {
             x = enhStats[i].getX() + enhStats[i].getWidth() + 5;
             miscStats[i] = new JTextField(0);
             miscStats[i].setBounds(x, y, w, h);
-            miscStats[i].addKeyListener(new Handler(this));
+            miscStats[i].setText(stats[2][i]);
+            miscStats[i].addKeyListener(ha);
             miscStats[i].setName(i + "");
             miscStats[i].setHorizontalAlignment(JTextField.CENTER);
             panelStats.add(miscStats[i]);
@@ -344,14 +353,15 @@ public class CharacterSheet extends JFrame {
             x = miscStats[i].getX() + miscStats[i].getWidth() + 5;
             tempStats[i] = new JTextField(0);
             tempStats[i].setBounds(x, y, w, h);
-            tempStats[i].addKeyListener(new Handler(this));
+            tempStats[i].setText(stats[3][i]);
+            tempStats[i].addKeyListener(ha);
             tempStats[i].setName(i + "");
             tempStats[i].setHorizontalAlignment(JTextField.CENTER);
             panelStats.add(tempStats[i]);
         }
     }
 
-    private void hp() {
+    private void hp(String[] hp) {
 
         labtotalHP = new JLabel("<html><h5>TOTAL</h5></html>");
         labtotalHP.setBounds(0, 0, 70, 10);
@@ -362,7 +372,8 @@ public class CharacterSheet extends JFrame {
         totalHP = new JTextField();
         totalHP.setBounds(20, labtotalHP.getHeight(), 30, 30);
         totalHP.setHorizontalAlignment(JTextField.CENTER);
-        totalHP.addKeyListener(new Handler(this));
+        totalHP.setText(hp[0]);
+        totalHP.addKeyListener(ha);
         totalHP.setName("hp");
         panelHP.add(totalHP);
 
@@ -385,13 +396,14 @@ public class CharacterSheet extends JFrame {
         damage = new JTextField();
         damage.setBounds(panelStats.getX() + panelStats.getWidth() + 30, panelHP.getY() + panelHP.getHeight(), 50, 20);
         damage.setHorizontalAlignment(JTextField.CENTER);
+        damage.setText(hp[1]);
         damage.setName("hp");
-        damage.addKeyListener(new Handler(this));
+        damage.addKeyListener(ha);
         totalPanel.add(damage);
         //panelHP.add(damage);        
     }
 
-    private void ac() {
+    private void ac(String[][] defense) {
 
         x = colStats[0].getX();
         y = colStats[0].getY() + 10;
@@ -443,7 +455,7 @@ public class CharacterSheet extends JFrame {
                 armorDefense[j] = new JTextField(0);
                 armorDefense[j].setBounds(x, y, w, h);
                 armorDefense[j].setEditable(false);
-                armorDefense[j].addKeyListener(new Handler(this));
+                armorDefense[j].addKeyListener(ha);
                 armorDefense[j].setHorizontalAlignment(JTextField.CENTER);
                 panelAtAndDef.add(armorDefense[j]);
                 j++;    //añadimos j porque hay que dejar un hueco entre armorInt[0] y armorInt [1]
@@ -470,7 +482,8 @@ public class CharacterSheet extends JFrame {
             sizeDefense[i] = new JTextField(0);
             sizeDefense[i].setBounds(x, y, w, h);
             sizeDefense[i].setName("0" + i);   //nombres de 2 cifras => 1ª=tabla, 2ª=fila
-            sizeDefense[i].addKeyListener(new Handler(this));
+            sizeDefense[i].addKeyListener(ha);
+            sizeDefense[i].setText(defense[0][i]);
             sizeDefense[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(sizeDefense[i]);
         }
@@ -481,8 +494,9 @@ public class CharacterSheet extends JFrame {
             x = sizeDefense[i].getX() + sizeDefense[i].getWidth() + 5;
             miscDefense[i] = new JTextField(0);
             miscDefense[i].setBounds(x, y, w, h);
-            miscDefense[i].addKeyListener(new Handler(this));
+            miscDefense[i].addKeyListener(ha);
             miscDefense[i].setName("0" + i);
+            miscDefense[i].setText(defense[1][i]);
             miscDefense[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(miscDefense[i]);
         }
@@ -493,14 +507,15 @@ public class CharacterSheet extends JFrame {
             x = miscDefense[i].getX() + miscDefense[i].getWidth() + 5;
             tempDefense[i] = new JTextField(0);
             tempDefense[i].setBounds(x, y, w, h);
-            tempDefense[i].addKeyListener(new Handler(this));
+            tempDefense[i].addKeyListener(ha);
             tempDefense[i].setName("0" + i);
+            tempDefense[i].setText(defense[2][i]);
             tempDefense[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(tempDefense[i]);
         }
     }
 
-    private void saves() {
+    private void saves(String[][] saves) {
 
         x = colDefense[0].getX();
         y = tDefense[2].getY() + tDefense[2].getHeight() + 25;
@@ -551,7 +566,8 @@ public class CharacterSheet extends JFrame {
             baseSaves[i] = new JTextField();
             baseSaves[i].setBounds(x, y, w, h);
             baseSaves[i].setName("1" + i);
-            baseSaves[i].addKeyListener(new Handler(this));
+            baseSaves[i].addKeyListener(ha);
+            baseSaves[i].setText(saves[0][i]);
             baseSaves[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(baseSaves[i]);
         }
@@ -575,8 +591,9 @@ public class CharacterSheet extends JFrame {
             x = mods[modsCount - 1].getX() + mods[modsCount - 1].getWidth() + 5;
             enhSaves[i] = new JTextField();
             enhSaves[i].setBounds(x, y, w, h);
-            enhSaves[i].addKeyListener(new Handler(this));
+            enhSaves[i].addKeyListener(ha);
             enhSaves[i].setName("1" + i);
+            enhSaves[i].setText(saves[1][i]);
             enhSaves[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(enhSaves[i]);
         }
@@ -587,8 +604,9 @@ public class CharacterSheet extends JFrame {
             x = enhSaves[i].getX() + enhSaves[i].getWidth() + 5;
             miscSaves[i] = new JTextField(0);
             miscSaves[i].setBounds(x, y, w, h);
-            miscSaves[i].addKeyListener(new Handler(this));
+            miscSaves[i].addKeyListener(ha);
             miscSaves[i].setName("1" + i);
+            miscSaves[i].setText(saves[2][i]);
             miscSaves[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(miscSaves[i]);
         }
@@ -599,14 +617,15 @@ public class CharacterSheet extends JFrame {
             x = miscDefense[i].getX() + miscDefense[i].getWidth() + 5;
             tempSaves[i] = new JTextField(0);
             tempSaves[i].setBounds(x, y, w, h);
-            tempSaves[i].addKeyListener(new Handler(this));
+            tempSaves[i].addKeyListener(ha);
             tempSaves[i].setName("1" + i);
+            tempSaves[i].setText(saves[3][i]);
             tempSaves[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(tempSaves[i]);
         }
     }
 
-    private void attacks() {
+    private void attacks(String[][] attack) {
 
         x = colSaves[0].getX();
         y = tSaves[2].getY() + tSaves[2].getHeight() + 25;
@@ -657,7 +676,8 @@ public class CharacterSheet extends JFrame {
             BAB[i] = new JTextField(0);
             BAB[i].setBounds(x, y, w, h);
             BAB[i].setName(6 + (i + ""));
-            BAB[i].addKeyListener(new Handler(this));
+            BAB[i].addKeyListener(ha);
+            BAB[i].setText(attack[0][i]);
             BAB[i].setHorizontalAlignment(JTextField.CENTER);
             panelAtAndDef.add(BAB[i]);
         }
@@ -682,8 +702,9 @@ public class CharacterSheet extends JFrame {
             sizeAttack[i] = new JTextField(0);
             sizeAttack[i].setBounds(x, y, w, h);
             sizeAttack[i].setName("2" + i);
+            sizeAttack[i].setText(attack[1][i]);
             sizeAttack[i].setHorizontalAlignment(JTextField.CENTER);
-            sizeAttack[i].addKeyListener(new Handler(this));
+            sizeAttack[i].addKeyListener(ha);
             panelAtAndDef.add(sizeAttack[i]);
         }
 
@@ -694,8 +715,9 @@ public class CharacterSheet extends JFrame {
             miscAttack[i] = new JTextField(0);
             miscAttack[i].setBounds(x, y, w, h);
             miscAttack[i].setName("2" + i);
+            miscAttack[i].setText(attack[2][i]);
             miscAttack[i].setHorizontalAlignment(JTextField.CENTER);
-            miscAttack[i].addKeyListener(new Handler(this));
+            miscAttack[i].addKeyListener(ha);
             panelAtAndDef.add(miscAttack[i]);
         }
 
@@ -706,13 +728,14 @@ public class CharacterSheet extends JFrame {
             tempAttack[i] = new JTextField(0);
             tempAttack[i].setBounds(x, y, w, h);
             tempAttack[i].setName("2" + i);
+            tempAttack[i].setText(attack[3][i]);
             tempAttack[i].setHorizontalAlignment(JTextField.CENTER);
-            tempAttack[i].addKeyListener(new Handler(this));
+            tempAttack[i].addKeyListener(ha);
             panelAtAndDef.add(tempAttack[i]);
         }
     }
 
-    private void skills() {
+    private void skills(String[][] skills) {
 
         x = colStats[0].getX();
         y = colStats[0].getY();
@@ -754,7 +777,8 @@ public class CharacterSheet extends JFrame {
             chkSkills[i].setBackground(i % 2 == 0 ? Color.DARK_GRAY : Menu.DARKER_GRAY);
             chkSkills[i].setBorder(BorderFactory.createLineBorder(Color.BLACK));
             chkSkills[i].setHorizontalAlignment(JLabel.LEFT);
-            chkSkills[i].addItemListener(new Handler(this));
+            chkSkills[i].setSelected(skills[0][i].equals("Y"));
+            chkSkills[i].addItemListener(ha);
             chkSkills[i].setName("S" + i);
             chkSkills[i].setOpaque(true);
             panelSkills.add(chkSkills[i]);
@@ -825,8 +849,9 @@ public class CharacterSheet extends JFrame {
             x = mods[modsCount - 1].getX() + mods[modsCount - 1].getWidth() + 5;
             rankSkills[i] = new JTextField(0);
             rankSkills[i].setBounds(x, y, w, h);
-            rankSkills[i].addKeyListener(new Handler(this));
+            rankSkills[i].addKeyListener(ha);
             rankSkills[i].setName("3" + i);
+            rankSkills[i].setText(skills[1][i]);
             rankSkills[i].setHorizontalAlignment(JTextField.CENTER);
             panelSkills.add(rankSkills[i]);
         }
@@ -837,7 +862,7 @@ public class CharacterSheet extends JFrame {
             x = rankSkills[i].getX() + rankSkills[i].getWidth() + 5;
             trainedSkills[i] = new JTextField(0);
             trainedSkills[i].setBounds(x, y, w, h);
-            trainedSkills[i].addKeyListener(new Handler(this));
+            trainedSkills[i].addKeyListener(ha);
             trainedSkills[i].setEditable(false);
             trainedSkills[i].setHorizontalAlignment(JTextField.CENTER);
             panelSkills.add(trainedSkills[i]);
@@ -849,8 +874,9 @@ public class CharacterSheet extends JFrame {
             x = trainedSkills[i].getX() + trainedSkills[i].getWidth() + 5;
             miscSkills[i] = new JTextField(0);
             miscSkills[i].setBounds(x, y, w, h);
-            miscSkills[i].addKeyListener(new Handler(this));
+            miscSkills[i].addKeyListener(ha);
             miscSkills[i].setName("3" + i);
+            miscSkills[i].setText(skills[2][i]);
             miscSkills[i].setHorizontalAlignment(JTextField.CENTER);
             panelSkills.add(miscSkills[i]);
         }
@@ -882,7 +908,7 @@ public class CharacterSheet extends JFrame {
         chooseArmor = new JComboBox();
         chooseArmor.setModel(st.armorNames);
         chooseArmor.setSelectedIndex(0);
-        chooseArmor.addActionListener(new Handler(this));
+        chooseArmor.addActionListener(ha);
         chooseArmor.setBounds((panelArmor.getWidth() / 2) - 55, colArmor[0].getY() + colArmor[0].getHeight() + 20, 110, 20);
         chooseArmor.setFont(miniPFONT);
         panelArmor.add(chooseArmor);
@@ -898,7 +924,7 @@ public class CharacterSheet extends JFrame {
 
         for (int i = 0; i < colWeapons.length; i++, x += 26) {
             colWeapons[i] = new JLabel("<html><h6>" + st.colWeapon[i] + "</h6></html>");
-            colWeapons[i].setBounds(x, y, i==3?w+20:w, h);
+            colWeapons[i].setBounds(x, y, i == 3 ? w + 20 : w, h);
             colWeapons[i].setHorizontalAlignment(JLabel.CENTER);
             panelWeapons.add(colWeapons[i]);
             if (i == 0) {
@@ -915,13 +941,13 @@ public class CharacterSheet extends JFrame {
         chooseWeapon = new JComboBox();
         chooseWeapon.setModel(st.weaponNames);
         chooseWeapon.setSelectedIndex(0);
-        chooseWeapon.addActionListener(new Handler(this));
+        chooseWeapon.addActionListener(ha);
         chooseWeapon.setBounds((panelWeapons.getWidth() / 2) - 55, colWeapons[0].getY() + colWeapons[0].getHeight() + 20, 110, 20);
         chooseWeapon.setFont(miniPFONT);
         panelWeapons.add(chooseWeapon);
     }
 
-    private void init() {
+    private void init(String init) {
 
         h = 20;
 
@@ -962,8 +988,9 @@ public class CharacterSheet extends JFrame {
         modInit = new JTextField();
         modInit.setBounds(plusInit.getX() + plusInit.getWidth() + 2, y, w, h);
         modInit.setHorizontalAlignment(JTextField.CENTER);
+        modInit.setText(init);
         modInit.setName("init");
-        modInit.addKeyListener(new Handler(this));
+        modInit.addKeyListener(ha);
         totalPanel.add(modInit);
 
     }
@@ -971,6 +998,7 @@ public class CharacterSheet extends JFrame {
     private void featsAndFeatures() {
         //escribir las pasivas en labels y aplicarlas, poner las activas en un checkBox
     }
+
 }
 
 //

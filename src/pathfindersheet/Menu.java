@@ -22,14 +22,16 @@ public class Menu extends JFrame {
     SavedSheets ss;
     String[] personajes;
     JMenuItem[] sheets;
+    Handler ha;
     
-    public Menu() {
+    public Menu(Handler ha) {
 
         super("Pathfinder sheets");
         setLayout(null);
         setContentPane(new JLabel(new ImageIcon(Menu.class.getResource("img/background.png"))));
 
         ss = new SavedSheets();
+        this.ha = ha;
 
         abrirFicha = new JMenu("      Open sheet          ");
         abrirFicha.setFont(PFONT);
@@ -44,19 +46,21 @@ public class Menu extends JFrame {
         
         nuevaFicha = new JMenuItem("      New sheet          ");
         nuevaFicha.setFont(PFONT);
+        nuevaFicha.setName("nuevaFicha");
         nuevaFicha.setForeground(KHAKI);
         nuevaFicha.setBackground(DARKER_GRAY);
         nuevaFicha.setFocusPainted(false);
         nuevaFicha.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        nuevaFicha.addActionListener(new Handler(this));
+        nuevaFicha.addActionListener(ha);
 
         salir = new JMenuItem("      Exit         ");
         salir.setFont(PFONT);
         salir.setForeground(KHAKI);
         salir.setBackground(DARKER_GRAY);
         salir.setFocusPainted(false);
+        salir.setName("salir");
         salir.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        salir.addActionListener(new Handler(this));
+        salir.addActionListener(ha);
 
         opciones = new JPopupMenu();
         opciones.addSeparator();
@@ -72,7 +76,7 @@ public class Menu extends JFrame {
         title.setContentAreaFilled(false);
         title.setFocusPainted(false);
         title.setBorder(BorderFactory.createEmptyBorder(0, 0, 5, 5));
-        title.addMouseListener(new Handler(this));
+        title.addMouseListener(ha);
         add(title);
 
     }
@@ -88,9 +92,10 @@ public class Menu extends JFrame {
                     sheets[i].setFont(PFONT);
                     sheets[i].setForeground(KHAKI);
                     sheets[i].setBackground(DARKER_GRAY);
+                    sheets[i].setName("sheet");
                     sheets[i].setFocusPainted(false);
                     sheets[i].setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-                    sheets[i].addActionListener(new Handler(this));
+                    sheets[i].addActionListener(ha);
                     abrirFicha.add(sheets[i]);
                 }
             } else {
