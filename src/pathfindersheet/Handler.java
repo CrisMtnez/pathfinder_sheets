@@ -56,27 +56,25 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
             if (e.getSource() == m.salir) {
                 System.exit(0);
             }
+
             personaje = "";
 
             if (e.getSource() == m.nuevaFicha) {
-
-                cn = new ChooseName(this);
-                cn.setSize(200, 140);
-                cn.setResizable(false);
-                cn.setLocationRelativeTo(null);
-                cn.setVisible(true);
-                cn.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+                chooseName();
             }
 
             if (((JMenuItem) e.getSource()).getName().equals("sheet")) {
                 personaje = ((JMenuItem) (e.getSource())).getText().trim();
                 String rutaFicha = m.ss.hojaPersonaje(((JMenuItem) (e.getSource())).getText().trim());
+                m.ss.VaciarArmorsAndWeapons();
                 m.ss.abrirFicha(rutaFicha);
                 cargarHoja();
             }
 
             if (cs != null) {
+
                 if (e.getSource() == cs.newf) {
+                    chooseName();
                 }
 
                 if (e.getSource() == cs.openf) {
@@ -86,10 +84,14 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 }
 
                 if (e.getSource() == cs.savef) {
+                    //borrarPenArmadura();  NO funciona, tengo que borrar los modificadores en el guardado de la ficha, no en la 
+                    //propia ficha. Siguen duplicandose armaduras y armas.
                     m.ss.guardarDatos(cs);
+                    m.fichasGuardadas();
                 }
 
                 if (e.getSource() == cs.exit) {
+                    cs.dispose();  //NO VA CUANDO ABRO OTRAS FICHAS DESDE UNA FICHA
                 }
 
                 if (e.getSource() == cs.resetAll) {
@@ -118,30 +120,15 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     ca.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
                 } else {
+                    
+                    borrarPenArmadura();
+                    
                     int indx = combo.getSelectedIndex();
                     int x = cs.colArmor[0].getX() - 1;
                     int y = cs.colArmor[0].getY() + cs.colArmor[0].getHeight() + 1;
                     int w = 73;
                     int h = 20;
 
-                    if (cs.chosenArmor != null) {
-                        try {
-                            int pen = Integer.parseInt(cs.chosenArmor[3].getText());
-                            for (int i = 0; i < cs.miscSkills.length; i++) {
-                                if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
-                                    try {
-                                        cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().equals("") ? "0"
-                                                : cs.miscSkills[i].getText()) + pen) + "");
-                                    } catch (NumberFormatException n) {
-                                    }
-                                }
-                            }
-                        } catch (NumberFormatException n) {
-                        }
-                        for (int i = cs.chosenArmor.length - 1; i >= 0; i--) {
-                            cs.panelArmor.remove(cs.chosenArmor[i]);
-                        }
-                    }
                     maxDex = -10;
                     modifiers(1, "stat");
 
@@ -163,6 +150,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                             + 15, cs.chooseArmor.getWidth(), cs.chooseArmor.getHeight());
                     cs.panelArmor.setSize(210, 121);
                     modifiers(0, "armor");
+
                 }
             }
 
@@ -232,6 +220,36 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 cargarHoja();
             }
         }
+    }
+
+    public void borrarPenArmadura() {
+        if (cs.chosenArmor != null) {
+            try {
+                int pen = Integer.parseInt(cs.chosenArmor[3].getText());
+                for (int i = 0; i < cs.miscSkills.length; i++) {
+                    if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
+                        try {
+                            cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().equals("") ? "0"
+                                    : cs.miscSkills[i].getText()) + pen) + "");
+                        } catch (NumberFormatException n) {
+                        }
+                    }
+                }
+            } catch (NumberFormatException n) {
+            }
+            for (int i = cs.chosenArmor.length - 1; i >= 0; i--) {
+                cs.panelArmor.remove(cs.chosenArmor[i]);
+            }
+        }
+    }
+
+    public void chooseName() {
+        cn = new ChooseName(this);
+        cn.setSize(200, 140);
+        cn.setResizable(false);
+        cn.setLocationRelativeTo(null);
+        cn.setVisible(true);
+        cn.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
 
     @Override
@@ -628,7 +646,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     for (int i = 0; i < cs.miscSkills.length; i++) {
                         if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
                             try {
-                                cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().equals("") ? "0"
+                                cs.miscSkills[i].setText((Integer.parseInt(cs.miscSkills[i].getText().trim().equals("") ? "0"
                                         : cs.miscSkills[i].getText().trim()) - value) + "");
                             } catch (NumberFormatException n) {
                             }
@@ -674,12 +692,13 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
     public void cargarHoja() {
         cs = new CharacterSheet(personaje, this, m.ss.stats, m.ss.defense, m.ss.saves, m.ss.attack, m.ss.skills,
-                m.ss.hp, m.ss.init);
+                m.ss.hp, m.ss.init, m.ss.armor, m.ss.weapons);
         cs.setSize(935, 680);
         cs.setVisible(true);
         cs.setResizable(true);
         cs.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         cs.setLocationRelativeTo(null);
+        cs.chooseArmor.setSelectedIndex(0);
         recalcularTodo(true);
     }
 
@@ -697,15 +716,15 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
         modifiers(0, "init");
 
         calcularHp();
-        
-        if (primeraVez){
-            for (int i=0; i<cs.chkSkills.length;i++){
-                if (cs.chkSkills[i].isSelected()){
+
+        if (primeraVez) {
+            for (int i = 0; i < cs.chkSkills.length; i++) {
+                if (cs.chkSkills[i].isSelected()) {
                     cs.trainedSkills[i].setText(3 + "");
                 }
             }
         }
-                
+
         modifiers(0, "skills");
     }
 }

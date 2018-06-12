@@ -13,8 +13,9 @@ public class CharacterSheet extends JFrame {
     JPanel totalPanel;
     SheetText st;
     JMenuBar bar;
-    JMenu file, options, help;
-    JMenuItem newf, openf, recentf, savef, exit, resetAll, diceRoller, activateToolTips, about;
+    JMenu file, options, help, recentf;
+    JMenuItem newf, openf, savef, exit, resetAll, diceRoller, activateToolTips, about;
+    JMenuItem[] sheets;
     JComboBox conditions, chooseArmor, chooseWeapon;
     JCheckBox[] chkSkills = new JCheckBox[35];
     JPanel panelStats, panelHP, panelAtAndDef, panelArmor, panelWeapons, borderPanelFeats, titlePanelFeats, panelFeats, panelSkills;
@@ -62,7 +63,7 @@ public class CharacterSheet extends JFrame {
 //                      * cs.st.weaponNames.removeElementAt(indiceActual);   PROBAR ESTO:
 //                        cs.st.weaponNames.insertElementAt(cs.st.weaponsList.get(indiceActual)[0].getText(), indx);
     public CharacterSheet(String personaje, Handler ha, String[][] stats, String[][] defense, String[][] saves,
-            String[][] attack, String[][] skills, String[] hp, String init) {
+            String[][] attack, String[][] skills, String[] hp, String init, ArrayList <String[]> armor, ArrayList <String[]> weapons) {
 
         super(personaje);
         setLayout(null);
@@ -169,10 +170,15 @@ public class CharacterSheet extends JFrame {
         scroll = new JScrollPane(totalPanel, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scroll.setBounds(0, 0, 855, 830);
         setContentPane(scroll);  //THIS!!
-
-        //setText de todos los textfield con los datos guardados. En el caso de armorInt&weapons guardar una fila con un int 
-        //y crear ese numero de JTextFields[5] dentro del ArrayList armorInt y lo mismo en el caso de weapons y luego llamar a
-        //la función armorInt y weapons y después setText.
+        
+        
+        for (int i=0;i<armor.size();i++){
+            st.addArmor(armor.get(i));
+        }
+        
+        for (int i=0;i<weapons.size();i++){
+            st.addWeapon(weapons.get(i));
+        }
     }
 
     private void menubar() {
@@ -195,11 +201,25 @@ public class CharacterSheet extends JFrame {
         openf.addActionListener(ha);
         file.add(openf);
 
-        recentf = new JMenuItem("Recent Sheets");
+        recentf = new JMenu("Recent Sheets");
         recentf.setMnemonic('R');
         recentf.setName("recent");
-        recentf.addActionListener(ha);
         file.add(recentf);
+
+        sheets = ha.m.fichasGuardadas();
+        if (sheets == null) {
+            sheets[0] = new JMenuItem("  No recent sheets  ");
+            recentf.add(sheets[0]);
+        } else {
+            for (int i = 0; i < sheets.length; i++) {
+                sheets[i] = new JMenuItem("  "+ha.m.personajes[i]+"  ");
+                sheets[i].addActionListener(ha);
+                sheets[i].setName("sheet");
+                recentf.add(sheets[i]);
+                if(i>3)                    
+                    break;
+            }
+        }
 
         file.addSeparator();
 

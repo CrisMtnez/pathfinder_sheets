@@ -7,9 +7,11 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultComboBoxModel;
 
 public class SavedSheets {
 
@@ -26,6 +28,12 @@ public class SavedSheets {
         "", "", "", "", "", "", "", "", ""}};       //[3][35]
     String[] hp = new String[]{"", ""};
     String init = "";
+    int numArmors;
+    int numWeapons;
+    ArrayList<String[]> weapons = new ArrayList();
+    ArrayList<String[]> armor = new ArrayList();
+    DefaultComboBoxModel<String> armorNames = new DefaultComboBoxModel();
+    DefaultComboBoxModel<String> weaponNames = new DefaultComboBoxModel();
 
     public SavedSheets() {
         f = new File(System.getProperty("user.home") + "/Pathfinder_Sheets");
@@ -45,7 +53,7 @@ public class SavedSheets {
         hp[0] = cs.totalHP.getText();
         hp[1] = cs.damage.getText();
         init = cs.modInit.getText();
-        //añadir ArrayList para armor y weapons
+        
 
         for (int i = 0; i < stats.length; i++) {
             for (int j = 0; j < stats[i].length; j++) {
@@ -135,8 +143,34 @@ public class SavedSheets {
                 }
             }
         }
+        
+        VaciarArmorsAndWeapons();
+        numArmors = cs.st.armor.size();
+        
+        for (int i = 0; i < cs.st.armor.size(); i++) {
+            armor.add(cs.st.armor.get(i));
+            armorNames.addElement(armor.get(i)[0]);
+        }
+
+        numWeapons = cs.st.weapons.size();
+        
+        for (int i = 0; i < cs.st.weapons.size(); i++) {
+            weapons.add(cs.st.weapons.get(i));
+            weaponNames.addElement(weapons.get(i)[0]);
+        }
 
         guardarFicha(cs);
+    }
+
+    public void VaciarArmorsAndWeapons() {
+        for (int i = 0; i < armor.size(); i++) {
+            armor.remove(i);
+        }
+        armorNames.removeAllElements();
+        for (int i = 0; i < weapons.size(); i++) {
+            weapons.remove(i);
+        }
+        weaponNames.removeAllElements();
     }
 
     public void guardarFicha(CharacterSheet cs) {
@@ -145,7 +179,7 @@ public class SavedSheets {
 
             for (int i = 0; i < stats.length; i++) {
                 for (int j = 0; j < stats[i].length; j++) {
-                    fw.print(stats[i][j].equals("")?" ":stats[i][j]);
+                    fw.print(stats[i][j].equals("") ? " " : stats[i][j]);
                     if (j != stats[i].length - 1) {
                         fw.print(",");
                     }
@@ -155,7 +189,7 @@ public class SavedSheets {
 
             for (int i = 0; i < defense.length; i++) {
                 for (int j = 0; j < defense[i].length; j++) {
-                    fw.print(defense[i][j].equals("")?" ":defense[i][j]);
+                    fw.print(defense[i][j].equals("") ? " " : defense[i][j]);
                     if (j != defense[i].length - 1) {
                         fw.print(",");
                     }
@@ -165,7 +199,7 @@ public class SavedSheets {
 
             for (int i = 0; i < saves.length; i++) {
                 for (int j = 0; j < saves[i].length; j++) {
-                    fw.print(saves[i][j].equals("")?" ":saves[i][j]);
+                    fw.print(saves[i][j].equals("") ? " " : saves[i][j]);
                     if (j != saves[i].length - 1) {
                         fw.print(",");
                     }
@@ -175,7 +209,7 @@ public class SavedSheets {
 
             for (int i = 0; i < attack.length; i++) {
                 for (int j = 0; j < attack[i].length; j++) {
-                    fw.print(attack[i][j].equals("")?" ":attack[i][j]);
+                    fw.print(attack[i][j].equals("") ? " " : attack[i][j]);
                     if (j != attack[i].length - 1) {
                         fw.print(",");
                     }
@@ -185,7 +219,7 @@ public class SavedSheets {
 
             for (int i = 0; i < skills.length; i++) {
                 for (int j = 0; j < skills[i].length; j++) {
-                    fw.print(skills[i][j].equals("")?" ":skills[i][j]);
+                    fw.print(skills[i][j].equals("") ? " " : skills[i][j]);
                     if (j != skills[i].length - 1) {
                         fw.print(",");
                     }
@@ -193,8 +227,31 @@ public class SavedSheets {
                 fw.println();
             }
 
-            fw.println((hp[0].equals("")?" ":hp[0]) + "," + (hp[1].equals("")?" ":hp[1]));
-            fw.println(init.equals("")?" ":init);
+            fw.println((hp[0].equals("") ? " " : hp[0]) + "," + (hp[1].equals("") ? " " : hp[1]));
+            fw.println(init.equals("") ? " " : init);
+            fw.println(numArmors);
+
+            for (int i = 0; i < armor.size(); i++) {
+                for (int j = 0; j < armor.get(i).length; j++) {
+                    fw.print(armor.get(i)[j].equals("") ? " " : armor.get(i)[j]);
+                    if (j != armor.get(i).length - 1) {
+                        fw.print(",");
+                    }
+                }
+                fw.println();
+            }
+
+            fw.println(numWeapons);
+
+            for (int i = 0; i < weapons.size(); i++) {
+                for (int j = 0; j < weapons.get(i).length; j++) {
+                    fw.print(weapons.get(i)[j].equals("") ? " " : weapons.get(i)[j]);
+                    if (j != weapons.get(i).length - 1) {
+                        fw.print(",");
+                    }
+                }
+                fw.println();
+            }
 
         } catch (IOException io) {
         }
@@ -222,9 +279,22 @@ public class SavedSheets {
             for (int i = 0; i < skills.length; i++) {
                 skills[i] = sc.nextLine().split(",");
             }
-            
+
             hp = sc.nextLine().split(",");
             init = sc.nextLine();
+            numArmors = Integer.parseInt(sc.nextLine());
+
+            for (int i = 0; i < numArmors; i++) {
+                armor.add(sc.nextLine().split(","));
+                armorNames.addElement(armor.get(i)[0]);
+            }
+
+            numWeapons = Integer.parseInt(sc.nextLine());
+
+            for (int i = 0; i < numWeapons; i++) {
+                weapons.add(sc.nextLine().split(","));
+                weaponNames.addElement(weapons.get(i)[0]);
+            }
 
         } catch (IOException io) {
         }

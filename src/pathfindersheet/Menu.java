@@ -81,7 +81,8 @@ public class Menu extends JFrame {
 
     }
     
-    public void fichasGuardadas(){
+    public JMenuItem[] fichasGuardadas(){
+        abrirFicha.removeAll();
         personajes = ss.listaPersonajes();
         if (personajes.length!=0 && personajes!=null) {                
                 sheets = new JMenuItem[personajes.length];
@@ -106,7 +107,8 @@ public class Menu extends JFrame {
                 empty.setFocusPainted(false);
                 empty.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
                 abrirFicha.add(empty);
-            }    
+            }     
+        
+        return sheets;
     }
-
 }
