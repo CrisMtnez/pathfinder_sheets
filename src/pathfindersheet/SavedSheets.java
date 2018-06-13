@@ -155,17 +155,17 @@ public class SavedSheets {
             }
         }
 
-        VaciarArmorsAndWeapons();
-        numArmors = cs.st.armor.size();
-
-        for (int i = 0; i < cs.st.armor.size(); i++) {
-            armor.add(cs.st.armor.get(i));
+        VaciarArmorsAndWeapons();  
+       // cs.chooseArmor.removeAllItems(); nope, me borra las de la hoja
+      //  cs.chooseWeapon.removeAllItems();
+        numArmors = cs.st.armor.size();//se duplican las filas cuando son más de 1
+        for (int i = 0; i < numArmors; i++) {
+            armor.add(cs.st.armor.get(i)); 
             armorNames.addElement(armor.get(i)[0]);
         }
 
-        numWeapons = cs.st.weapons.size();
-
-        for (int i = 0; i < cs.st.weapons.size(); i++) {
+        numWeapons = cs.st.weapons.size();       
+        for (int i = 0; i < numWeapons; i++) {
             weapons.add(cs.st.weapons.get(i));
             weaponNames.addElement(weapons.get(i)[0]);
         }
@@ -242,7 +242,7 @@ public class SavedSheets {
             fw.println(init.equals("") ? " " : init);
             fw.println(numArmors);
 
-            for (int i = 0; i < armor.size(); i++) {
+            for (int i = 0; i < numArmors; i++) {
                 for (int j = 0; j < armor.get(i).length; j++) {
                     fw.print(armor.get(i)[j].equals("") ? " " : armor.get(i)[j]);
                     if (j != armor.get(i).length - 1) {
@@ -254,7 +254,7 @@ public class SavedSheets {
 
             fw.println(numWeapons);
 
-            for (int i = 0; i < weapons.size(); i++) {
+            for (int i = 0; i < numWeapons; i++) {
                 for (int j = 0; j < weapons.get(i).length; j++) {
                     fw.print(weapons.get(i)[j].equals("") ? " " : weapons.get(i)[j]);
                     if (j != weapons.get(i).length - 1) {
