@@ -53,7 +53,6 @@ public class SavedSheets {
         hp[0] = cs.totalHP.getText();
         hp[1] = cs.damage.getText();
         init = cs.modInit.getText();
-        
 
         for (int i = 0; i < stats.length; i++) {
             for (int j = 0; j < stats[i].length; j++) {
@@ -128,6 +127,12 @@ public class SavedSheets {
             }
         }
 
+        int pen = 0;
+        try {
+            pen = Integer.parseInt(cs.chosenArmor[3].getText());
+        } catch (NumberFormatException | NullPointerException n) {
+        }
+
         for (int i = 0; i < skills.length; i++) {
             for (int j = 0; j < skills[i].length; j++) {
                 switch (i) {
@@ -138,22 +143,28 @@ public class SavedSheets {
                         skills[i][j] = cs.rankSkills[j].getText();
                         break;
                     case 2:
-                        skills[i][j] = cs.miscSkills[j].getText();
+                        if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
+                            try {
+                                skills[i][j] = (Integer.parseInt(cs.miscSkills[i].getText().trim().equals("") ? "0"
+                                        : cs.miscSkills[i].getText()) + pen) + "";
+                            } catch (NumberFormatException n) {
+                            }
+                        }
                         break;
                 }
             }
         }
-        
+
         VaciarArmorsAndWeapons();
         numArmors = cs.st.armor.size();
-        
+
         for (int i = 0; i < cs.st.armor.size(); i++) {
             armor.add(cs.st.armor.get(i));
             armorNames.addElement(armor.get(i)[0]);
         }
 
         numWeapons = cs.st.weapons.size();
-        
+
         for (int i = 0; i < cs.st.weapons.size(); i++) {
             weapons.add(cs.st.weapons.get(i));
             weaponNames.addElement(weapons.get(i)[0]);

@@ -925,6 +925,8 @@ public class CharacterSheet extends JFrame {
         w = 73;
         h = 20;
 
+        if (chooseArmor!=null)
+            chooseArmor.removeAllItems();
         chooseArmor = new JComboBox();
         chooseArmor.setModel(st.armorNames);
         chooseArmor.setSelectedIndex(0);
@@ -958,6 +960,8 @@ public class CharacterSheet extends JFrame {
         w = 73;
         h = 20;
 
+        if (chooseWeapon!=null)
+            chooseWeapon.removeAllItems();
         chooseWeapon = new JComboBox();
         chooseWeapon.setModel(st.weaponNames);
         chooseWeapon.setSelectedIndex(0);

@@ -28,6 +28,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
     ChooseName cn;
     String personaje;
     int maxDex = -10;
+    int penAnterior;
 
     public Handler() {
         m = new Menu(this);
@@ -67,8 +68,11 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                 personaje = ((JMenuItem) (e.getSource())).getText().trim();
                 String rutaFicha = m.ss.hojaPersonaje(((JMenuItem) (e.getSource())).getText().trim());
                 m.ss.VaciarArmorsAndWeapons();
+                maxDex = -10;
                 m.ss.abrirFicha(rutaFicha);
                 cargarHoja();
+                //cs.chooseArmor.setModel(cs.st.armorNames);
+                //cs.chooseWeapon.setModel(cs.st.weaponNames);                 
             }
 
             if (cs != null) {
@@ -85,7 +89,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
 
                 if (e.getSource() == cs.savef) {
                     //borrarPenArmadura();  NO funciona, tengo que borrar los modificadores en el guardado de la ficha, no en la 
-                    //propia ficha. Siguen duplicandose armaduras y armas.
+                    //propia ficha. Siguen duplicandose armaduras y armas.                    
                     m.ss.guardarDatos(cs);
                     m.fichasGuardadas();
                 }
@@ -120,9 +124,15 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     ca.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 
                 } else {
-                    
-                    borrarPenArmadura();
-                    
+
+                    borrarPenArmadura(false);
+
+                    if (cs.chosenArmor!=null) {
+                        for (int i = cs.chosenArmor.length - 1; i >= 0; i--) {
+                            cs.panelArmor.remove(cs.chosenArmor[i]);
+                        }
+                    }
+
                     int indx = combo.getSelectedIndex();
                     int x = cs.colArmor[0].getX() - 1;
                     int y = cs.colArmor[0].getY() + cs.colArmor[0].getHeight() + 1;
@@ -146,6 +156,7 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                             w = 25;
                         }
                     }
+                    currentPen();
                     cs.chooseArmor.setBounds(cs.chooseArmor.getX(), cs.chosenArmor[0].getY() + cs.chosenArmor[0].getHeight()
                             + 15, cs.chooseArmor.getWidth(), cs.chooseArmor.getHeight());
                     cs.panelArmor.setSize(210, 121);
@@ -222,10 +233,19 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
         }
     }
 
-    public void borrarPenArmadura() {
+    public void currentPen() {
+        try {
+            penAnterior = Integer.parseInt(cs.chosenArmor[3].getText().trim().equals("") ? "0"
+                    : cs.chosenArmor[3].getText().trim());
+        } catch (NumberFormatException numberFormatException) {
+            penAnterior = 0;
+        }
+    }
+
+    public void borrarPenArmadura(boolean cambiaPen) {
         if (cs.chosenArmor != null) {
             try {
-                int pen = Integer.parseInt(cs.chosenArmor[3].getText());
+                int pen = cambiaPen ? penAnterior : Integer.parseInt(cs.chosenArmor[3].getText());
                 for (int i = 0; i < cs.miscSkills.length; i++) {
                     if (cs.mods[i + 9].getName().equals("0") || cs.mods[i + 9].getName().equals("1")) {
                         try {
@@ -236,9 +256,6 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     }
                 }
             } catch (NumberFormatException n) {
-            }
-            for (int i = cs.chosenArmor.length - 1; i >= 0; i--) {
-                cs.panelArmor.remove(cs.chosenArmor[i]);
             }
         }
     }
@@ -325,7 +342,9 @@ public class Handler extends MouseAdapter implements ActionListener, KeyListener
                     break;
 
                 case "armor":
+                    borrarPenArmadura(true);
                     modifiers(0, "armor");
+                    currentPen();
                     break;
 
                 case "weapons":
